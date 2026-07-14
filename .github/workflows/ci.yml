@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build engine
+        run: npm run build --workspace @ekantik/correction-engine
+      - name: Typecheck all workspaces
+        run: npm run typecheck
+      - name: Unit tests + 54-event replay regression suite (M1 gate)
+        run: npm test
+      - name: Portal production build
+        run: npm run build --workspace @ekantik/research-portal

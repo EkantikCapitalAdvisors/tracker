@@ -1,0 +1,9 @@
+{
+  "crons": [
+    { "path": "/api/cron/daily-ingest", "schedule": "35 22 * * 1-5" },
+    { "path": "/api/cron/weekly-ingest", "schedule": "0 14 * * 6" },
+    { "path": "/api/cron/friday-sentinel", "schedule": "0 22 * * 5" },
+    { "path": "/api/cron/retirement-checks", "schedule": "30 14 * * 6" },
+    { "path": "/api/cron/annual-export", "schedule": "0 15 2 1 *" }
+  ]
+}
