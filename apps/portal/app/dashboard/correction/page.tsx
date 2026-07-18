@@ -3,6 +3,7 @@ import { Sparkline } from '@/components/Sparkline';
 import { StatusChip } from '@/components/StatusChip';
 import { AdminDrawer } from '@/components/AdminDrawer';
 import { Methodology } from '@/components/Methodology';
+import { Hint } from '@/components/Hint';
 import { LAYER_THEORY, TIER_DOCS, TRIPWIRE_DOCS } from '@/lib/methodology';
 
 export const dynamic = 'force-dynamic';
@@ -57,26 +58,48 @@ export default async function CorrectionDashboard() {
             <div>
               <div className="text-xs uppercase tracking-widest text-ivory/60">Current state</div>
               <div className="font-heading text-3xl">
-                TIER {s.tier} <span className="text-lg">— {TIER_LABELS[s.tier]}</span>
+                <Hint text={`${TIER_DOCS[s.tier]!.meaning} Entry rule: ${TIER_DOCS[s.tier]!.entry}`}>
+                  <span className="underline decoration-ivory/40 decoration-dotted underline-offset-8">
+                    TIER {s.tier} <span className="text-lg">— {TIER_LABELS[s.tier]}</span>
+                  </span>
+                </Hint>
               </div>
               <div className="text-sm text-ivory/70">{s.daysInState} days in state (since {s.enteredAt})</div>
             </div>
             <div>
-              <div className="text-xs uppercase tracking-widest text-ivory/60">Drawdown vs cycle high</div>
+              <div className="text-xs uppercase tracking-widest text-ivory/60">
+                <Hint text="Close-basis decline from the rolling 6-month closing high (anchored at Tier-1 entry as the regain reference). Every tier entry threshold is defined on this number: −5% Tier 1, −10% Tier 2, −20% Tier 3.">
+                  <span className="underline decoration-ivory/40 decoration-dotted underline-offset-4">
+                    Drawdown vs cycle high
+                  </span>
+                </Hint>
+              </div>
               <div className="font-heading text-3xl">{s.drawdownPct !== null ? `${s.drawdownPct.toFixed(1)}%` : '—'}</div>
               <div className="text-sm text-ivory/70">
                 S&P {s.spClose?.toFixed(2) ?? '—'} ({s.spDate ?? '—'}) · high {s.cycleHigh?.toFixed(2) ?? '—'} ({s.cycleHighDate ?? '—'})
               </div>
             </div>
             <div>
-              <div className="text-xs uppercase tracking-widest text-ivory/60">Router windows</div>
+              <div className="text-xs uppercase tracking-widest text-ivory/60">
+                <Hint text="Failed-recovery router: after the first −5% close it opens two windows — 30 trading days to regain the peak, 60 to avoid a lower low. A failed bounce (ESCALATE) historically extended to ≥10% losses 58% of the time vs 7% for clean recoveries.">
+                  <span className="underline decoration-ivory/40 decoration-dotted underline-offset-4">
+                    Router windows
+                  </span>
+                </Hint>
+              </div>
               <div className="font-heading text-2xl">{s.routerStatus ?? 'INACTIVE'}</div>
               <div className="text-sm text-ivory/70">
                 {s.crossDate ? `cross ${s.crossDate} · 30td ≈ ${s.routerDeadline30} · 60td ≈ ${s.routerDeadline60}` : 'no −5% cross'}
               </div>
             </div>
             <div>
-              <div className="text-xs uppercase tracking-widest text-ivory/60">Next checkpoint</div>
+              <div className="text-xs uppercase tracking-widest text-ivory/60">
+                <Hint text="The nearest frozen rule boundary from the current state — the specific close that would change the tier next, so a reviewer always knows what number matters tomorrow.">
+                  <span className="underline decoration-ivory/40 decoration-dotted underline-offset-4">
+                    Next checkpoint
+                  </span>
+                </Hint>
+              </div>
               <div className="text-sm text-ivory/85">
                 {s.tier === 0
                   ? `Close ≤ ${(s.cycleHigh! * 0.95).toFixed(0)} (−5.0%) enters Tier 1 and opens the 30/60-td router windows.`
@@ -103,11 +126,29 @@ export default async function CorrectionDashboard() {
           {data.tripwires.map((t: TripwireCard) => (
             <div key={t.id} className="rounded-lg border border-navy/15 bg-white p-4">
               <div className="flex items-center justify-between">
-                <span className="font-semibold">{t.id}</span>
+                {TRIPWIRE_DOCS[t.id] ? (
+                  <Hint text={TRIPWIRE_DOCS[t.id]!.summary}>
+                    <span className="font-semibold underline decoration-navy/30 decoration-dotted underline-offset-4">
+                      {t.id}
+                    </span>
+                  </Hint>
+                ) : (
+                  <span className="font-semibold">{t.id}</span>
+                )}
                 <StatusChip status={t.status} />
               </div>
               <div className="mt-2 text-sm">
-                {t.reading} <span className="text-navy/50">vs {t.threshold}</span>
+                {TRIPWIRE_DOCS[t.id] ? (
+                  <Hint text={TRIPWIRE_DOCS[t.id]!.reading}>
+                    <span>
+                      {t.reading} <span className="text-navy/50">vs {t.threshold}</span>
+                    </span>
+                  </Hint>
+                ) : (
+                  <>
+                    {t.reading} <span className="text-navy/50">vs {t.threshold}</span>
+                  </>
+                )}
               </div>
               <div className="mt-1 text-xs text-navy/50">
                 as of {t.asOfDate}
@@ -153,7 +194,17 @@ export default async function CorrectionDashboard() {
                     const t = byId.get(id);
                     return (
                       <tr key={id} className="border-t border-navy/10">
-                        <td className="py-1.5 pr-2 font-medium">{id}</td>
+                        <td className="py-1.5 pr-2 font-medium">
+                          {TRIPWIRE_DOCS[id] ? (
+                            <Hint text={TRIPWIRE_DOCS[id]!.summary}>
+                              <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
+                                {id}
+                              </span>
+                            </Hint>
+                          ) : (
+                            id
+                          )}
+                        </td>
                         <td className="py-1.5 pr-2">{t?.reading ?? 'N/A'}</td>
                         <td className="py-1.5">{t ? <StatusChip status={t.status} /> : '—'}</td>
                       </tr>
@@ -162,13 +213,25 @@ export default async function CorrectionDashboard() {
                   {layer.key === 'L2' && (
                     <>
                       <tr className="border-t border-navy/10">
-                        <td className="py-1.5 pr-2 font-medium">COT_ES_NET_SPEC_Z</td>
+                        <td className="py-1.5 pr-2 font-medium">
+                          <Hint text="CFTC Commitments of Traders: E-mini S&P net speculative positioning, expressed as a z-score vs its own 3-year history. Crowded longs = fuel for mechanical selling. Probation series — context only, no trigger status.">
+                            <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
+                              COT_ES_NET_SPEC_Z
+                            </span>
+                          </Hint>
+                        </td>
                         <td className="py-1.5 pr-2">{data.contextSeries.cotZ?.toFixed(2) ?? 'N/A — weekly'}</td>
                         <td className="py-1.5 text-xs text-navy/50">probation</td>
                       </tr>
                       {data.manualEntries.length === 0 && (
                         <tr className="border-t border-navy/10">
-                          <td className="py-1.5 pr-2 font-medium">ALIGHT / GAMMA</td>
+                          <td className="py-1.5 pr-2 font-medium">
+                            <Hint text="Human-entered seller-activation context: Alight 401(k) trading index (retail panic flows) and dealer gamma positioning (whether market makers amplify or dampen moves). Entered via the admin drawer; renders N/A when stale > 14 days.">
+                              <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
+                                ALIGHT / GAMMA
+                              </span>
+                            </Hint>
+                          </td>
                           <td className="py-1.5 pr-2">N/A — manual pending</td>
                           <td className="py-1.5 text-xs text-navy/50">stale &gt;14d flagged</td>
                         </tr>
@@ -186,7 +249,13 @@ export default async function CorrectionDashboard() {
                   )}
                   {layer.key === 'L1' && (
                     <tr className="border-t border-navy/10">
-                      <td className="py-1.5 pr-2 font-medium">IG / HY OAS</td>
+                      <td className="py-1.5 pr-2 font-medium">
+                        <Hint text="Investment-grade and high-yield option-adjusted spreads — the market-price complement to the Baa−10y series. Context only until the Jan-2027 calibration adds them to the backtest; no trigger status before then, enforced in code.">
+                          <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
+                            IG / HY OAS
+                          </span>
+                        </Hint>
+                      </td>
                       <td className="py-1.5 pr-2">
                         {data.contextSeries.igOas?.toFixed(2) ?? 'N/A'} / {data.contextSeries.hyOas?.toFixed(2) ?? 'N/A'}
                       </td>

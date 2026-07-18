@@ -91,6 +91,8 @@ export const STATUS_LEGEND: readonly { status: string; meaning: string }[] = [
 ];
 
 export interface TripwireDoc {
+  /** One-line plain-language answer to "what does this measure?" — used for hover tooltips. */
+  summary: string;
   theory: string;
   precedent: string;
   reading: string;
@@ -98,6 +100,8 @@ export interface TripwireDoc {
 
 export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
   CREDIT_IMPULSE: {
+    summary:
+      'Is corporate credit repricing risk faster than equities? Baa−10y spread change over 3 months — the strongest depth predictor in the backtest (ρ = +0.65).',
     theory:
       'Baa−10y is the price of corporate default risk. A widening of ≥ +50bp in three months means credit is repricing corporate balance sheets faster than equities — the seller is fundamental, not mechanical. Strongest depth predictor in the backtest: correlation with final event depth ρ = +0.65 (p < 0.001); widening accompanied 11 of 12 major episodes since 1974.',
     precedent:
@@ -106,6 +110,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'TRIGGERED + router ESCALATE = Tier-2 entry regardless of drawdown, and pushes the depth range toward its upper half. Δ3m ≤ 0 (narrowing) is required to exit Tier 2.',
   },
   CREDIT_CRISIS: {
+    summary:
+      'Has the absolute Baa−10y spread crossed into the funding-crisis regime (> 250bp) where refinancing is impaired and selling becomes forced?',
     theory:
       'Level, not flow. A Baa−10y spread above 250bp marks the funding-crisis regime where refinancing is impaired and selling becomes forced — the dose-response into capitulation-class outcomes. Distinct from CREDIT_IMPULSE: the impulse catches the repricing in motion; the level confirms the regime has arrived.',
     precedent:
@@ -114,6 +120,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'One leg of the only non-price Tier-3 entry: Sahm FIRED + credit crisis + policy CONSTRAINED.',
   },
   POLICY_SWITCH: {
+    summary:
+      'Is the Fed free to rescue? CPI above 4% removes the Fed put — historically median depth 13.9% vs 9.4% when policy is free.',
     theory:
       'The Fed-put switch. Below 4% CPI the central bank can ease into weakness; above it, easing risks un-anchoring inflation, so drawdowns run deeper before help arrives. Backtest: median event depth 13.9% with CPI above 4% vs 9.4% below (ρ = +0.30, p = 0.03).',
     precedent:
@@ -122,6 +130,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'CONSTRAINED is an overlay, never a trigger: it forces the depth-engine range to its upper half and is one leg of the non-price Tier-3 entry. CPI is marked provisional pending revisions.',
   },
   RATE_SHOCK: {
+    summary:
+      'Has the 10-year yield risen ≥ +80bp in 3 months? Flag only (56% standalone hit rate) — matters when combined with rich valuations or a credit trigger.',
     theory:
       'A ≥ +80bp rise in the 10-year over three months compresses valuations and forces de-risking — but standalone it preceded a correction in only 10 of 18 instances (56%), barely better than a coin flip. The backtest therefore demoted it to a conditioning variable: state-relevant only in combination with a top-tercile CAPE or a credit trigger. Keeping a weak signal demoted is a design feature, not a gap.',
     precedent:
@@ -130,6 +140,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'ARMED is a flag, never a trigger. The card note states whether the combined condition (CAPE top tercile or credit TRIGGERED) currently makes it state-relevant.',
   },
   SAHM_GATE: {
+    summary:
+      'Is a recession starting in real time? The Sahm rule arms the gate; jobless-claims and revision-breadth confirmations are required before it fires.',
     theory:
       'The Sahm rule — 3-month average unemployment ≥ 0.50pp above its 12-month low — is the most reliable real-time recession marker, and recessions are what turn corrections into bears: Sahm triggered in 56% of ≥15% events vs 24% of shallower ones. But raw Sahm stays elevated through early recoveries and produced the Aug-2024 false positive, so FIRED requires two confirmations: claims 4-wk MA +15% YoY AND negative revision breadth.',
     precedent:
@@ -138,6 +150,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'ARMED with incomplete confirmation is capped by design — missing breadth data cannot fire the gate. FIRED is one leg of the non-price Tier-3 entry.',
   },
   FAILED_RECOVERY: {
+    summary:
+      'After the first −5% close: snap-back or roll-over? Failed bounces extended to ≥10% losses 58% of the time vs 7% for clean recoveries.',
     theory:
       'The behavioral core of the system: after the first −5% close, does the market snap back or roll over? A quick regain is a shakeout; a failed bounce plus a lower low reveals sustained institutional distribution. In the 1990–2022 daily cohort (n = 33), escalated events extended to ≥10% 58% of the time vs 7% for clean recoveries — an 8× separation, the strongest binary discriminator in the study.',
     precedent:
@@ -146,6 +160,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'OPEN starts at the −5% cross. ESCALATE requires BOTH legs: no peak regain within 30 trading days AND a close below the initial-cross low within 60. ESCALATE + credit impulse TRIGGERED = Tier-2 entry regardless of drawdown.',
   },
   RV_ACCEL: {
+    summary:
+      'Are the machines selling? 10-day realized volatility ≥ 1.75× the 60-day baseline marks vol-targeting / risk-parity / CTA de-risking.',
     theory:
       'When 10-day realized volatility runs ≥ 1.75× the 60-day baseline, the mechanical seller class engages: vol-targeting funds, risk parity, CTAs, and dealer gamma hedging all de-risk on the same signal, so selling begets selling regardless of fundamentals. Directionally validated in the backtest (small n) — held as activation context, not a driver.',
     precedent:
@@ -154,6 +170,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'TRIGGERED marks mechanical-class engagement — expect gap risk and overshoot. Feeds activation context and depth-engine cascade scoring; not a transition input.',
   },
   VIX_CONFIRM: {
+    summary:
+      'How severe is the cascade? VIX ≥ 30 sustained for 3 closes grades the tier — it can never cause a state transition.',
     theory:
       'VIX is endogenous — it spikes with the drawdown, not ahead of it. It appeared in only 19% of Tier-1 events but 77% of Tier-2 and 100% of Tier-3: an excellent grader of cascade severity and a worthless predictor. The engine encodes this structurally — the transition function’s input type does not contain the VIX field, and a regression test asserts it can never alter a transition.',
     precedent:
@@ -162,6 +180,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'TRIGGERED grades the severity of the current tier, nothing else. If a tier ever changed because of VIX, that would be a bug — report it.',
   },
   CAPE_HIGH: {
+    summary:
+      'How flammable is the starting valuation? Top trailing-30-year tercile ≈ 3× event-start frequency; zero depth power once an event begins.',
     theory:
       'Starting valuation is dry tinder: it does not time the spark, it multiplies how often sparks catch. With Shiller CAPE in its top trailing-30-year tercile, corrections start ~3× more frequently — but once an event begins, CAPE has zero power to predict its depth. The trailing-30y window keeps the tercile honest across regimes (an absolute CAPE bar would read “always expensive” after 1995).',
     precedent:
@@ -170,6 +190,8 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
       'ARMED = elevated event-start frequency and a red flag in depth cascade scoring — nothing more. Never a trigger.',
   },
   CURVE_INVERTED: {
+    summary:
+      'Which regime are we in? 10y−3m inversion flags restrictive policy with a long, variable lead — never timing.',
     theory:
       '10y−3m inversion means the market prices policy as restrictive enough to break growth — historically preceding recessions with a long and famously variable lead measured in quarters, not days. That makes it a regime flag: it tells you which kind of cycle you are in, never when an event starts.',
     precedent:
