@@ -8,6 +8,12 @@ The deploy branch is `claude/new-session-h9gon4` — it is the repository's **de
 (the repo was created empty). Optionally rename it to `main` first (GitHub → Settings →
 Branches → rename); Vercel/Railway will follow the default branch either way.
 
+> **Automated path:** `scripts/go-live.mjs` executes steps 1–5 below via the Supabase, Upstash,
+> Vercel, and Railway APIs — `node scripts/go-live.mjs` with the tokens listed in its header.
+> Run it from any machine with open network access, or hand the tokens to a Claude Code session
+> whose environment allows those hosts and let it drive. The manual steps below remain the
+> reference and the fallback.
+
 ---
 
 ## 1. Supabase (≈10 min)
