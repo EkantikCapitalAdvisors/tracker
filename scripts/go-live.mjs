@@ -136,7 +136,12 @@ async function upstash() {
     db = await api('https://api.upstash.com/v2/redis/database', {
       method: 'POST',
       headers: auth,
-      body: { name: 'ekantik-correction', region: process.env.UPSTASH_REGION ?? 'us-east-1', tls: true },
+      body: {
+        database_name: 'ekantik-correction',
+        platform: 'aws',
+        primary_region: process.env.UPSTASH_REGION ?? 'us-east-1',
+        tls: true,
+      },
     });
     ok('Upstash: database created');
   }
@@ -174,6 +179,14 @@ async function vercel() {
     } else throw err;
   }
 
+  log('Vercel: disabling deployment protection (bootstrap/cron routes must be reachable)…');
+  await api(`https://api.vercel.com/v9/projects/${project.id}${team}`, {
+    method: 'PATCH',
+    headers: auth,
+    body: { ssoProtection: null },
+  });
+  ok('Vercel: deployment protection disabled');
+
   log('Vercel: setting environment variables…');
   const vars = {
     SUPABASE_URL: out.SUPABASE_URL,
@@ -205,7 +218,7 @@ async function vercel() {
         : { type: 'github', org: REPO.split('/')[0], repo: REPO.split('/')[1], ref: BRANCH },
     },
   });
-  out.PORTAL_URL = `https://${deploy.url ?? deploy.alias?.[0] ?? 'ekantik-correction-portal.vercel.app'}`;
+  out.PORTAL_URL = 'https://ekantik-correction-portal.vercel.app'; // stable production alias, not the per-deploy URL
   ok(`Vercel: deployment triggered → ${out.PORTAL_URL}`);
 }
 
@@ -224,10 +237,15 @@ async function railway() {
     return res.data;
   };
 
+  log('Railway: resolving workspace…');
+  const me = await gql(`query { me { workspaces { id name } } }`);
+  const workspaceId = process.env.RAILWAY_WORKSPACE_ID ?? me.me.workspaces[0]?.id;
+  if (!workspaceId) throw new Error('No Railway workspace found for this token');
+
   log('Railway: creating project…');
   const created = await gql(
     `mutation($input: ProjectCreateInput!) { projectCreate(input: $input) { id environments { edges { node { id name } } } } }`,
-    { input: { name: 'ekantik-correction-worker' } },
+    { input: { name: 'ekantik-correction-worker', workspaceId } },
   );
   const projectId = created.projectCreate.id;
   const envId = created.projectCreate.environments.edges[0].node.id;
@@ -314,3 +332,8 @@ for (const [k, v] of Object.entries(out)) {
   console.log(`${k}=${k.includes('SERVICE_ROLE') || k.includes('SECRET') || k.includes('KEY') ? `${String(v).slice(0, 6)}…` : v}`);
 }
 console.log('\nNext: GO_LIVE.md §6 (first sentinel + decommission v1) and §7 (governance test).');
+
+if (process.env.GO_LIVE_DUMP_OUTPUTS) {
+  const { writeFileSync } = await import('node:fs');
+  writeFileSync(process.env.GO_LIVE_DUMP_OUTPUTS, JSON.stringify(out, null, 2));
+}
