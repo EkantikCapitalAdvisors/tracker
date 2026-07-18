@@ -13,10 +13,10 @@ export async function runWeeklyIngest(): Promise<void> {
   // CFTC COT — E-mini S&P 500 net speculative positioning (socrata API).
   try {
     const url = new URL('https://publicreporting.cftc.gov/resource/6dca-aqww.json');
-    url.searchParams.set('$where', "contract_market_name like 'E-MINI S%26P 500'");
+    url.searchParams.set('$where', "contract_market_name like 'E-MINI S&P 500'");
     url.searchParams.set('$order', 'report_date_as_yyyy_mm_dd DESC');
     url.searchParams.set('$limit', '160'); // ~3y of weekly reports
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = { 'user-agent': 'ekantik-correction-worker/2.0' };
     if (env.CFTC_APP_TOKEN) headers['X-App-Token'] = env.CFTC_APP_TOKEN;
     const res = await fetch(url, { headers, signal: AbortSignal.timeout(30_000) });
     if (!res.ok) throw new Error(`CFTC HTTP ${res.status}`);
