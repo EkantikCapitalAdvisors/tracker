@@ -54,8 +54,12 @@ export async function runWeeklyIngest(): Promise<void> {
     });
     if (!res.ok) throw new Error(`multpl HTTP ${res.status}`);
     const html = await res.text();
-    const rows = [...html.matchAll(/<td class="left">([^<]+)<\/td>\s*<td class="right">\s*([\d.]+)/g)]
-      .map((m) => ({ raw: m[1]!.trim(), value: Number(m[2]) }))
+    const table = /<table id="datatable">([\s\S]*?)<\/table>/.exec(html)?.[1] ?? '';
+    const rows = [...table.matchAll(/<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>/g)]
+      .map((m) => ({
+        raw: m[1]!.trim(),
+        value: Number(m[2]!.replace(/&#x[0-9a-fA-F]+;/g, '').trim()),
+      }))
       .filter((r) => Number.isFinite(r.value))
       .slice(0, 480);
     const parsed = rows
