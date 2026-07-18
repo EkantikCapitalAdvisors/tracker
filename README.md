@@ -87,6 +87,11 @@ confirmed-higher-low are human-entered in the admin drawer and render **N/A when
 days**. Ingestion is fail-open: a failed series writes a `DATA_GAP` row and never blocks the
 pipeline.
 
+International context indices (**context only — never feed the engine**): Yahoo daily closes
+for Nikkei 225, Euro Stoxx 50, DAX, FTSE 100, Hang Seng, KOSPI, TAIEX (`INTL_*` series). The
+dashboard's Global-context panel renders each index's drawdown vs its own 6-month closing high
+and its trailing 60-session return correlation with the S&P, sorted by correlation.
+
 ## Governance operations
 
 - **Propose:** admin drawer → justification, proposer.

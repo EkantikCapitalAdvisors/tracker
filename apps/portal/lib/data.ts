@@ -1,6 +1,7 @@
 import 'server-only';
 import type { EngineState, TripwireId, TripwireStatus } from '@ekantik/correction-engine';
 import { db } from './supabaseServer';
+import { INTL_INDICES } from './methodology';
 
 export interface TripwireCard {
   id: TripwireId | string;
@@ -58,6 +59,80 @@ export interface DashboardData {
   }[];
   manualEntries: { field: string; asOfDate: string; valueNum: number | null; valueBool: boolean | null; stale: boolean }[];
   contextSeries: { igOas: number | null; hyOas: number | null; cotZ: number | null };
+  intlIndices: IntlIndexRow[];
+}
+
+export interface IntlIndexRow {
+  id: string;
+  name: string;
+  hint: string;
+  close: number | null;
+  asOfDate: string | null;
+  /** % below the index's own trailing 6-month closing high (context only). */
+  drawdownPct: number | null;
+  /** Pearson correlation of daily log returns vs SP500, last 60 aligned sessions. */
+  corr60: number | null;
+  spark: number[];
+}
+
+/** Daily log returns keyed by date (each series vs its own prior session). */
+function returnsByDate(rows: { d: string; v: number }[]): Map<string, number> {
+  const out = new Map<string, number>();
+  for (let i = 1; i < rows.length; i++) {
+    const prev = rows[i - 1]!.v;
+    const cur = rows[i]!;
+    if (prev > 0 && cur.v > 0) out.set(cur.d, Math.log(cur.v / prev));
+  }
+  return out;
+}
+
+function pearson(pairs: [number, number][]): number | null {
+  const n = pairs.length;
+  if (n < 20) return null; // demand a meaningful overlap
+  const mx = pairs.reduce((a, p) => a + p[0], 0) / n;
+  const my = pairs.reduce((a, p) => a + p[1], 0) / n;
+  let sxy = 0;
+  let sxx = 0;
+  let syy = 0;
+  for (const [x, y] of pairs) {
+    sxy += (x - mx) * (y - my);
+    sxx += (x - mx) ** 2;
+    syy += (y - my) ** 2;
+  }
+  if (sxx === 0 || syy === 0) return null;
+  return sxy / Math.sqrt(sxx * syy);
+}
+
+/** Context-only panel: intl drawdowns + 60-session return correlation vs SP500. */
+async function loadIntlContext(): Promise<IntlIndexRow[]> {
+  const spx = await series('SP500', 140);
+  const spxReturns = returnsByDate(spx);
+  const rows = await Promise.all(
+    INTL_INDICES.map(async (idx): Promise<IntlIndexRow> => {
+      const hist = await series(idx.id, 140);
+      if (hist.length === 0) {
+        return { ...idx, close: null, asOfDate: null, drawdownPct: null, corr60: null, spark: [] };
+      }
+      const last = hist[hist.length - 1]!;
+      const high = Math.max(...hist.slice(-126).map((r) => r.v));
+      const idxReturns = returnsByDate(hist);
+      const aligned: [number, number][] = [];
+      for (const [d, r] of idxReturns) {
+        const s = spxReturns.get(d);
+        if (s !== undefined) aligned.push([r, s]);
+      }
+      return {
+        ...idx,
+        close: last.v,
+        asOfDate: last.d,
+        drawdownPct: high > 0 ? ((last.v - high) / high) * 100 : null,
+        corr60: pearson(aligned.slice(-60)),
+        spark: hist.slice(-90).map((r) => r.v),
+      };
+    }),
+  );
+  // Highest-correlation markets first — "where the US is most correlated".
+  return rows.sort((a, b) => (b.corr60 ?? -9) - (a.corr60 ?? -9));
 }
 
 async function series(id: string, limit: number): Promise<{ d: string; v: number }[]> {
@@ -174,10 +249,11 @@ export async function loadDashboard(): Promise<DashboardData> {
   const manualLatest = new Map<string, { field: string; as_of_date: string; value_num: number | null; value_bool: boolean | null }>();
   for (const m of manuals ?? []) if (!manualLatest.has(m.field)) manualLatest.set(m.field, m);
 
-  const [ig, hy, cot] = await Promise.all([
+  const [ig, hy, cot, intlIndices] = await Promise.all([
     series('BAMLC0A0CM', 1),
     series('BAMLH0A0HYM2', 1),
     series('COT_ES_NET_SPEC_Z', 1),
+    loadIntlContext(),
   ]);
 
   const spClose = spx.at(-1) ?? null;
@@ -252,5 +328,6 @@ export async function loadDashboard(): Promise<DashboardData> {
       hyOas: hy.at(-1)?.v ?? null,
       cotZ: cot.at(-1)?.v ?? null,
     },
+    intlIndices,
   };
 }

@@ -61,6 +61,7 @@ export function Methodology() {
             ['Historical base rates — 54 events, 1974–2026', METHODOLOGY.baseRates],
             ['The failed-recovery router — why 30/60 trading days', METHODOLOGY.router],
             ['Depth engine — why a range and never a point', METHODOLOGY.depthEngine],
+            ['Global context — correlated international markets', METHODOLOGY.global],
             ['Falsifiability — FP ledger and retirement criteria', METHODOLOGY.falsifiability],
             ['Governance — why the thresholds cannot drift', METHODOLOGY.governance],
           ] as const

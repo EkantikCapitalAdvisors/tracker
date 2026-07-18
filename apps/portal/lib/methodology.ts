@@ -200,6 +200,49 @@ export const TRIPWIRE_DOCS: Readonly<Record<string, TripwireDoc>> = {
   },
 };
 
+/**
+ * International context indices — CONTEXT ONLY, never feed the engine.
+ * `id` values must match INTL_SERIES in apps/worker/src/jobs/dailyIngest.ts.
+ * `hint` explains each index's transmission channel into US corrections.
+ */
+export const INTL_INDICES: readonly { id: string; name: string; hint: string }[] = [
+  {
+    id: 'INTL_NIKKEI225',
+    name: 'Nikkei 225 · Japan',
+    hint: 'The yen-carry funding channel: when the yen strengthens fast, leveraged carry positions unwind globally — the Aug-2024 unwind took the Nikkei down ~12% in a session and dragged US futures with it.',
+  },
+  {
+    id: 'INTL_STOXX50',
+    name: 'Euro Stoxx 50 · Euro area',
+    hint: 'Broad euro-area risk — the sovereign/banking channel of the 2010–12 EU crises (three of the 54 catalog events were EU-driven).',
+  },
+  {
+    id: 'INTL_DAX',
+    name: 'DAX · Germany',
+    hint: 'Export-heavy cyclical Europe — global manufacturing and trade beta; tends to amplify global growth scares.',
+  },
+  {
+    id: 'INTL_FTSE100',
+    name: 'FTSE 100 · UK',
+    hint: 'Commodity- and financial-heavy global large caps — a broad risk barometer with low domestic-UK sensitivity.',
+  },
+  {
+    id: 'INTL_HANGSENG',
+    name: 'Hang Seng · Hong Kong',
+    hint: 'The China channel: 2015–16 devaluation contagion and 2021 Evergrande both reached the S&P through this market.',
+  },
+  {
+    id: 'INTL_KOSPI',
+    name: 'KOSPI · Korea',
+    hint: 'Global trade + memory-semiconductor beta — an early cyclical tell on world demand.',
+  },
+  {
+    id: 'INTL_TAIEX',
+    name: 'TAIEX · Taiwan',
+    hint: 'Semiconductor supply-chain concentration (TSMC) — the transmission line for AI/chip-led repricing.',
+  },
+];
+
 export const LAYER_THEORY: Readonly<Record<string, string>> = {
   L0: 'Conditions that make the forest flammable — none of them strike the match. Multipliers of event frequency (CAPE ×3) and event depth (policy overlay); structurally excluded from firing transitions.',
   L1: 'The causes: credit repricing, funding stress, recession onset, rate shocks. Only this layer — plus the L2 router — can set state.',
@@ -220,4 +263,6 @@ export const METHODOLOGY = {
     'The system is built to be falsified, not defended. Every TRIGGERED / FIRED / ESCALATE reading opens a 9-month outcome window in the false-positive ledger (did a ≥10% event follow?). Pre-committed retirement criteria fire Slack alerts that propose — never apply — suspension: credit impulse after 3 consecutive live triggers with no ≥10% event; Sahm after a 2nd consecutive FIRED with no recession in 12m; the router if live P(≥10%|ESCALATE) drops below 35% over any 10 escalations; rate shock after 2 failed combined flags. Tripwire and state logs are append-only at the database level, and an annual January export re-runs the backtest against the year’s live readings.',
   governance:
     'Thresholds are frozen at the Postgres level: UPDATE/DELETE on a frozen row is rejected by trigger. The only mutation path is a written justification (≥50 chars) → 48-hour minimum cool-off (DB-enforced) → countersignature by a second person (proposer cannot countersign; DB-enforced) → an apply RPC. Portal and worker both verify at load that live thresholds match the committed constants and abort on any divergence without a countersigned change.',
+  global:
+    'International indices are tracked because correlated selling across regions distinguishes global repricing from a local shakeout: 1987 was a worldwide crash, 1997–98 arrived through Asia and Russia/LTCM, 2010–12 through the euro area, 2015–16 through China’s devaluation, and the Aug-2024 unwind through the yen carry trade. The panel shows each index’s drawdown from its own 6-month closing high and its trailing 60-session correlation of daily returns with the S&P. High correlation + synchronized drawdowns = global confirmation; a US drawdown the rest of the world ignores points to a domestic, usually shallower, catalyst. Two caveats: Asian and European sessions close before New York, so same-date correlation understates their lead; and correlations themselves surge toward 1 in every cascade (they are partly a symptom). Context only — like VIX, this panel can never move the tier.',
 } as const;

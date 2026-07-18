@@ -6,6 +6,7 @@
  */
 
 import { fetchFredSeries } from '../lib/fred.js';
+import { fetchYahooDaily } from '../lib/yahoo.js';
 import { postThread } from '../lib/slack.js';
 import { db, storeReadings, type ReadingRow } from '../lib/supabase.js';
 import { assembleReadings } from '../derive.js';
@@ -25,6 +26,20 @@ const DAILY_SERIES: { id: string; provisional?: boolean }[] = [
   { id: 'CPIAUCSL', provisional: true },
   { id: 'UNRATE' },
   { id: 'IC4WSA' },
+];
+
+/**
+ * International context indices — CONTEXT ONLY, never feed the engine.
+ * series_id values must match INTL_INDICES in apps/portal/lib/methodology.ts.
+ */
+const INTL_SERIES: { id: string; symbol: string }[] = [
+  { id: 'INTL_NIKKEI225', symbol: '^N225' },
+  { id: 'INTL_STOXX50', symbol: '^STOXX50E' },
+  { id: 'INTL_DAX', symbol: '^GDAXI' },
+  { id: 'INTL_FTSE100', symbol: '^FTSE' },
+  { id: 'INTL_HANGSENG', symbol: '^HSI' },
+  { id: 'INTL_KOSPI', symbol: '^KS11' },
+  { id: 'INTL_TAIEX', symbol: '^TWII' },
 ];
 
 export async function runDailyIngest(): Promise<void> {
@@ -52,6 +67,26 @@ export async function runDailyIngest(): Promise<void> {
         },
       ]);
       console.error(`DATA_GAP ${series.id}: ${(err as Error).message}`);
+    }
+  }
+
+  // International context indices (fail-open; never block the evaluation).
+  for (const idx of INTL_SERIES) {
+    try {
+      const obs = await fetchYahooDaily(idx.symbol);
+      await storeReadings(
+        obs.slice(-400).map((o) => ({
+          series_id: idx.id,
+          as_of_date: o.date,
+          value: o.value,
+          source: 'yahoo',
+        })),
+      );
+    } catch (err) {
+      await storeReadings([
+        { series_id: idx.id, as_of_date: today, value: null, source: 'yahoo', data_gap: true },
+      ]);
+      console.error(`DATA_GAP ${idx.id}: ${(err as Error).message}`);
     }
   }
 

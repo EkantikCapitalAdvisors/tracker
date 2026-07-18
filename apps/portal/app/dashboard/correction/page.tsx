@@ -269,6 +269,79 @@ export default async function CorrectionDashboard() {
         </div>
       </section>
 
+      {/* 3b — Global context: correlated international indices */}
+      <section className="mt-8">
+        <h2 className="text-xl">
+          <Hint text="Correlated selling across regions distinguishes global repricing from a local shakeout. Context only — like VIX, this panel can never move the tier. See the methodology section for the theory and precedents.">
+            <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
+              Global context — international indices
+            </span>
+          </Hint>
+        </h2>
+        <p className="mt-1 text-sm text-navy/60">
+          Sorted by trailing 60-session correlation with the S&P — the markets where US selling is
+          most synchronized. Drawdowns are vs each index&rsquo;s own 6-month closing high. Context
+          only — no trigger status.
+        </p>
+        {/* no overflow-x-auto: a scroll container would clip the hover tooltips */}
+        <div className="mt-3 rounded-lg border border-navy/15 bg-white">
+          <table className="w-full text-sm">
+            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-navy/60">
+              <tr>
+                <th className="p-2">Index</th>
+                <th className="p-2">Close</th>
+                <th className="p-2">
+                  <Hint text="Percent below the index's own trailing 6-month closing high — the same convention as the S&P drawdown in the state banner. Synchronized drawdowns ≤ −5% across regions = global confirmation of a US event.">
+                    <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
+                      Drawdown vs 6-mo high
+                    </span>
+                  </Hint>
+                </th>
+                <th className="p-2">
+                  <Hint text="Pearson correlation of daily log returns vs the S&P over the last 60 aligned sessions. Note: Asian and European sessions close before New York, so same-date correlation understates their lead — and correlations surge toward 1 inside every cascade (partly a symptom).">
+                    <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
+                      60-day corr vs S&P
+                    </span>
+                  </Hint>
+                </th>
+                <th className="p-2">90 sessions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.intlIndices.map((ix) => (
+                <tr key={ix.id} className="border-t border-navy/10">
+                  <td className="p-2 font-medium">
+                    <Hint text={ix.hint}>
+                      <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
+                        {ix.name}
+                      </span>
+                    </Hint>
+                  </td>
+                  <td className="p-2 whitespace-nowrap">
+                    {ix.close !== null ? ix.close.toLocaleString('en-US', { maximumFractionDigits: 1 }) : 'N/A'}
+                    {ix.asOfDate ? <span className="text-xs text-navy/50"> ({ix.asOfDate})</span> : null}
+                  </td>
+                  <td className={`p-2 font-medium ${ix.drawdownPct !== null && ix.drawdownPct <= -5 ? 'text-triggered' : 'text-quiet'}`}>
+                    {ix.drawdownPct !== null ? `${ix.drawdownPct.toFixed(1)}%` : 'N/A'}
+                  </td>
+                  <td className="p-2">{ix.corr60 !== null ? ix.corr60.toFixed(2) : 'N/A'}</td>
+                  <td className="p-2">
+                    <Sparkline values={ix.spark} />
+                  </td>
+                </tr>
+              ))}
+              {data.intlIndices.every((ix) => ix.close === null) && (
+                <tr>
+                  <td className="p-3 text-navy/60" colSpan={5}>
+                    No international readings yet — they arrive with the next daily ingest.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* 4 — Tier history */}
       <section className="mt-8">
         <h2 className="text-xl">Tier history</h2>
