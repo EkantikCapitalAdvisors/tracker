@@ -2,21 +2,20 @@ import { loadDashboard, type DashboardData, type TripwireCard } from '@/lib/data
 import { Sparkline } from '@/components/Sparkline';
 import { StatusChip } from '@/components/StatusChip';
 import { AdminDrawer } from '@/components/AdminDrawer';
+import { Methodology } from '@/components/Methodology';
+import { LAYER_THEORY, TIER_DOCS, TRIPWIRE_DOCS } from '@/lib/methodology';
 
 export const dynamic = 'force-dynamic';
 
-const TIER_LABELS: Record<number, string> = {
-  0: 'Baseline',
-  1: 'Speculative unwind',
-  2: 'Fundamental repricing',
-  3: 'Capitulation',
-};
+const TIER_LABELS: Record<number, string> = Object.fromEntries(
+  TIER_DOCS.map((t) => [t.tier, t.label]),
+);
 
-const LAYERS: { title: string; ids: string[] }[] = [
-  { title: 'L0 — Vulnerability (context multipliers; never triggers)', ids: ['CAPE_HIGH', 'POLICY_SWITCH', 'CURVE_INVERTED'] },
-  { title: 'L1 — Causal drivers (may set state)', ids: ['CREDIT_IMPULSE', 'CREDIT_CRISIS', 'RATE_SHOCK', 'SAHM_GATE'] },
-  { title: 'L2 — Seller activation (may escalate state)', ids: ['FAILED_RECOVERY', 'RV_ACCEL'] },
-  { title: 'L3 — Cascade confirmation (grade only; never trigger)', ids: ['VIX_CONFIRM'] },
+const LAYERS: { key: string; title: string; ids: string[] }[] = [
+  { key: 'L0', title: 'L0 — Vulnerability (context multipliers; never triggers)', ids: ['CAPE_HIGH', 'POLICY_SWITCH', 'CURVE_INVERTED'] },
+  { key: 'L1', title: 'L1 — Causal drivers (may set state)', ids: ['CREDIT_IMPULSE', 'CREDIT_CRISIS', 'RATE_SHOCK', 'SAHM_GATE'] },
+  { key: 'L2', title: 'L2 — Seller activation (may escalate state)', ids: ['FAILED_RECOVERY', 'RV_ACCEL'] },
+  { key: 'L3', title: 'L3 — Cascade confirmation (grade only; never trigger)', ids: ['VIX_CONFIRM'] },
 ];
 
 export default async function CorrectionDashboard() {
@@ -94,6 +93,9 @@ export default async function CorrectionDashboard() {
         )}
       </section>
 
+      {/* 1b — Legend + methodology */}
+      <Methodology />
+
       {/* 2 — Tripwire board */}
       <section className="mt-8">
         <h2 className="text-xl">Tripwire board</h2>
@@ -115,6 +117,20 @@ export default async function CorrectionDashboard() {
               <div className="mt-2">
                 <Sparkline values={t.spark} />
               </div>
+              {TRIPWIRE_DOCS[t.id] && (
+                <details className="mt-2 border-t border-navy/10 pt-2 text-xs text-navy/70">
+                  <summary className="cursor-pointer select-none font-medium text-navy/60">
+                    Theory &amp; precedent
+                  </summary>
+                  <p className="mt-1.5">{TRIPWIRE_DOCS[t.id]!.theory}</p>
+                  <p className="mt-1.5">
+                    <span className="font-semibold">Precedent:</span> {TRIPWIRE_DOCS[t.id]!.precedent}
+                  </p>
+                  <p className="mt-1.5">
+                    <span className="font-semibold">How to read:</span> {TRIPWIRE_DOCS[t.id]!.reading}
+                  </p>
+                </details>
+              )}
             </div>
           ))}
           {data.tripwires.length === 0 && (
@@ -128,8 +144,9 @@ export default async function CorrectionDashboard() {
         <h2 className="text-xl">Layer panels</h2>
         <div className="mt-3 grid gap-4 md:grid-cols-2">
           {LAYERS.map((layer) => (
-            <div key={layer.title} className="rounded-lg border border-navy/15 bg-white p-4">
+            <div key={layer.key} className="rounded-lg border border-navy/15 bg-white p-4">
               <h3 className="text-base">{layer.title}</h3>
+              <p className="mt-1 text-xs text-navy/60">{LAYER_THEORY[layer.key]}</p>
               <table className="mt-2 w-full text-sm">
                 <tbody>
                   {layer.ids.map((id) => {
@@ -142,7 +159,7 @@ export default async function CorrectionDashboard() {
                       </tr>
                     );
                   })}
-                  {layer.title.startsWith('L2') && (
+                  {layer.key === 'L2' && (
                     <>
                       <tr className="border-t border-navy/10">
                         <td className="py-1.5 pr-2 font-medium">COT_ES_NET_SPEC_Z</td>
@@ -167,7 +184,7 @@ export default async function CorrectionDashboard() {
                       ))}
                     </>
                   )}
-                  {layer.title.startsWith('L1') && (
+                  {layer.key === 'L1' && (
                     <tr className="border-t border-navy/10">
                       <td className="py-1.5 pr-2 font-medium">IG / HY OAS</td>
                       <td className="py-1.5 pr-2">
