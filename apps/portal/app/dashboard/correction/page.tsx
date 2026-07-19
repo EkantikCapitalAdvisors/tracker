@@ -15,11 +15,83 @@ const TIER_LABELS: Record<number, string> = Object.fromEntries(
 );
 
 const LAYERS: { key: string; title: string; ids: string[] }[] = [
-  { key: 'L0', title: 'L0 — Vulnerability (context multipliers; never triggers)', ids: ['CAPE_HIGH', 'POLICY_SWITCH', 'CURVE_INVERTED'] },
-  { key: 'L1', title: 'L1 — Causal drivers (may set state)', ids: ['CREDIT_IMPULSE', 'CREDIT_CRISIS', 'RATE_SHOCK', 'SAHM_GATE'] },
-  { key: 'L2', title: 'L2 — Seller activation (may escalate state)', ids: ['FAILED_RECOVERY', 'RV_ACCEL'] },
-  { key: 'L3', title: 'L3 — Cascade confirmation (grade only; never trigger)', ids: ['VIX_CONFIRM'] },
+  { key: 'L0', title: 'Vulnerability — how flammable are conditions?', ids: ['CAPE_HIGH', 'POLICY_SWITCH', 'CURVE_INVERTED'] },
+  { key: 'L1', title: 'Causal drivers — is a real seller being activated?', ids: ['CREDIT_IMPULSE', 'CREDIT_CRISIS', 'RATE_SHOCK', 'SAHM_GATE'] },
+  { key: 'L2', title: 'Seller activation — who is actually selling?', ids: ['FAILED_RECOVERY', 'RV_ACCEL'] },
+  { key: 'L3', title: 'Cascade confirmation — how severe is it?', ids: ['VIX_CONFIRM'] },
 ];
+
+const ACTIVE = new Set(['ARMED', 'TRIGGERED', 'CONSTRAINED', 'FIRED', 'ESCALATE']);
+
+/** One tripwire card — name (hover: summary), reading vs threshold, sparkline, theory. */
+function TripwireCardView({ t }: { t: TripwireCard }) {
+  const doc = TRIPWIRE_DOCS[t.id];
+  return (
+    <div id={`tw-${t.id}`} className="rounded-lg border border-navy/15 bg-white p-4">
+      <div className="flex items-center justify-between">
+        {doc ? (
+          <Hint text={doc.summary}>
+            <span className="font-semibold underline decoration-navy/30 decoration-dotted underline-offset-4">
+              {t.id}
+            </span>
+          </Hint>
+        ) : (
+          <span className="font-semibold">{t.id}</span>
+        )}
+        <StatusChip status={t.status} />
+      </div>
+      <div className="mt-2 text-sm">
+        {doc ? (
+          <Hint text={doc.reading}>
+            <span>
+              {t.reading} <span className="text-navy/50">vs {t.threshold}</span>
+            </span>
+          </Hint>
+        ) : (
+          <>
+            {t.reading} <span className="text-navy/50">vs {t.threshold}</span>
+          </>
+        )}
+      </div>
+      <div className="mt-1 text-xs text-navy/50">
+        as of {t.asOfDate}
+        {t.dataGap ? ' · DATA GAP' : ''}
+      </div>
+      {t.note && <div className="mt-1 text-xs italic text-navy/60">{t.note}</div>}
+      <div className="mt-2">
+        <Sparkline values={t.spark} />
+      </div>
+      {doc && (
+        <details className="mt-2 border-t border-navy/10 pt-2 text-xs text-navy/70">
+          <summary className="cursor-pointer select-none font-medium text-navy/60">
+            Theory &amp; precedent
+          </summary>
+          <p className="mt-1.5">{doc.theory}</p>
+          <p className="mt-1.5">
+            <span className="font-semibold">Precedent:</span> {doc.precedent}
+          </p>
+          <p className="mt-1.5">
+            <span className="font-semibold">How to read:</span> {doc.reading}
+          </p>
+        </details>
+      )}
+    </div>
+  );
+}
+
+/** Small context pill (COT, IG/HY OAS, manual entries) — never a trigger. */
+function ContextPill({ label, value, hint }: { label: string; value: string; hint: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-navy/15 bg-navy/[0.04] px-3 py-1 text-xs text-navy/70">
+      <Hint text={hint}>
+        <span className="font-medium underline decoration-navy/30 decoration-dotted underline-offset-4">
+          {label}
+        </span>
+      </Hint>
+      <span>{value}</span>
+    </span>
+  );
+}
 
 export default async function CorrectionDashboard() {
   let data: DashboardData;
@@ -39,6 +111,7 @@ export default async function CorrectionDashboard() {
 
   const s = data.state;
   const byId = new Map(data.tripwires.map((t) => [t.id, t]));
+  const boardAsOf = data.tripwires[0]?.asOfDate ?? null;
   const pos = s
     ? computePositioning({
         tier: s.tier,
@@ -60,7 +133,7 @@ export default async function CorrectionDashboard() {
         </p>
       </header>
 
-      {/* 0 — What the evidence currently means (hand-off from Positioning) */}
+      {/* 0 — Hand-off from Positioning (the what) */}
       {pos && (
         <Link
           href="/dashboard/positioning"
@@ -76,7 +149,7 @@ export default async function CorrectionDashboard() {
         </Link>
       )}
 
-      {/* 1 — State banner */}
+      {/* 1 — State banner: the verdict */}
       <section id="state" className="rounded-lg border border-navy/15 bg-navy p-6 text-ivory">
         {s ? (
           <div className="grid gap-4 md:grid-cols-4">
@@ -141,165 +214,115 @@ export default async function CorrectionDashboard() {
         )}
       </section>
 
-      {/* 1b — Legend + methodology */}
+      {/* 1b — Collapsed reference: tier & status legends */}
       <Methodology />
 
-      {/* 2 — Tripwire board */}
+      {/* 2 — The signal board, grouped by the causal chain */}
       <section className="mt-8">
-        <h2 className="text-xl">Tripwire board</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {data.tripwires.map((t: TripwireCard) => (
-            <div key={t.id} id={`tw-${t.id}`} className="rounded-lg border border-navy/15 bg-white p-4">
-              <div className="flex items-center justify-between">
-                {TRIPWIRE_DOCS[t.id] ? (
-                  <Hint text={TRIPWIRE_DOCS[t.id]!.summary}>
-                    <span className="font-semibold underline decoration-navy/30 decoration-dotted underline-offset-4">
-                      {t.id}
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-xl">The signal board</h2>
+          {boardAsOf && <span className="text-xs text-navy/50">evaluated on closing data · {boardAsOf}</span>}
+        </div>
+        <p className="mt-1 max-w-3xl text-sm text-navy/60">
+          Read top to bottom — the causal chain of a correction: how flammable conditions are, what
+          could ignite them, who is actually selling, and how severe the cascade is. Only the
+          driver and activation layers can move the tier.
+        </p>
+
+        {data.tripwires.length === 0 && (
+          <p className="mt-3 text-sm text-navy/60">No evaluations logged yet.</p>
+        )}
+
+        {LAYERS.map((layer) => {
+          const cards = layer.ids
+            .map((id) => byId.get(id))
+            .filter((t): t is TripwireCard => t !== undefined);
+          const active = cards.filter((t) => ACTIVE.has(String(t.status)));
+          return (
+            <div key={layer.key} className="mt-6">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-navy/15 pb-2">
+                <div>
+                  <h3 className="text-base font-semibold">
+                    <span className="mr-2 rounded bg-navy px-1.5 py-0.5 font-mono text-xs text-ivory">
+                      {layer.key}
                     </span>
-                  </Hint>
-                ) : (
-                  <span className="font-semibold">{t.id}</span>
-                )}
-                <StatusChip status={t.status} />
-              </div>
-              <div className="mt-2 text-sm">
-                {TRIPWIRE_DOCS[t.id] ? (
-                  <Hint text={TRIPWIRE_DOCS[t.id]!.reading}>
-                    <span>
-                      {t.reading} <span className="text-navy/50">vs {t.threshold}</span>
+                    {layer.title}
+                  </h3>
+                  <p className="mt-0.5 text-xs text-navy/55">{LAYER_THEORY[layer.key]}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {active.length === 0 ? (
+                    <span className="rounded-full border border-quiet/40 bg-quiet/10 px-2.5 py-0.5 text-xs font-semibold text-quiet">
+                      ALL QUIET
                     </span>
-                  </Hint>
-                ) : (
-                  <>
-                    {t.reading} <span className="text-navy/50">vs {t.threshold}</span>
-                  </>
-                )}
+                  ) : (
+                    active.map((t) => (
+                      <a
+                        key={t.id}
+                        href={`#tw-${t.id}`}
+                        className="rounded-full border border-gold/60 bg-gold/15 px-2.5 py-0.5 text-xs font-semibold text-[#8a6d1f]"
+                      >
+                        {t.id} {t.status}
+                      </a>
+                    ))
+                  )}
+                </div>
               </div>
-              <div className="mt-1 text-xs text-navy/50">
-                as of {t.asOfDate}
-                {t.dataGap ? ' · DATA GAP' : ''}
+
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {cards.map((t) => (
+                  <TripwireCardView key={t.id} t={t} />
+                ))}
               </div>
-              {t.note && <div className="mt-1 text-xs italic text-navy/60">{t.note}</div>}
-              <div className="mt-2">
-                <Sparkline values={t.spark} />
-              </div>
-              {TRIPWIRE_DOCS[t.id] && (
-                <details className="mt-2 border-t border-navy/10 pt-2 text-xs text-navy/70">
-                  <summary className="cursor-pointer select-none font-medium text-navy/60">
-                    Theory &amp; precedent
-                  </summary>
-                  <p className="mt-1.5">{TRIPWIRE_DOCS[t.id]!.theory}</p>
-                  <p className="mt-1.5">
-                    <span className="font-semibold">Precedent:</span> {TRIPWIRE_DOCS[t.id]!.precedent}
-                  </p>
-                  <p className="mt-1.5">
-                    <span className="font-semibold">How to read:</span> {TRIPWIRE_DOCS[t.id]!.reading}
-                  </p>
-                </details>
+
+              {/* Context readings that live alongside this layer — never triggers */}
+              {layer.key === 'L1' && (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="text-xs uppercase tracking-wide text-navy/45">Context · no trigger status</span>
+                  <ContextPill
+                    label="IG / HY OAS"
+                    value={`${data.contextSeries.igOas?.toFixed(2) ?? 'N/A'} / ${data.contextSeries.hyOas?.toFixed(2) ?? 'N/A'}`}
+                    hint="Investment-grade and high-yield option-adjusted spreads — the market-price complement to the Baa−10y series. Context only until the Jan-2027 calibration adds them to the backtest; no trigger status before then, enforced in code."
+                  />
+                </div>
+              )}
+              {layer.key === 'L2' && (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="text-xs uppercase tracking-wide text-navy/45">Context · no trigger status</span>
+                  <ContextPill
+                    label="COT ES net specs (z)"
+                    value={data.contextSeries.cotZ?.toFixed(2) ?? 'N/A — weekly'}
+                    hint="CFTC Commitments of Traders: E-mini S&P net speculative positioning, expressed as a z-score vs its own 3-year history. Crowded longs = fuel for mechanical selling. Probation series — context only."
+                  />
+                  {data.manualEntries.length === 0 ? (
+                    <ContextPill
+                      label="Alight 401(k) / dealer gamma"
+                      value="N/A — manual pending"
+                      hint="Human-entered seller-activation context: Alight 401(k) trading index (retail panic flows) and dealer gamma positioning (whether market makers amplify or dampen moves). Entered via the admin drawer; renders N/A when stale > 14 days."
+                    />
+                  ) : (
+                    data.manualEntries.map((m) => (
+                      <ContextPill
+                        key={m.field}
+                        label={m.field}
+                        value={m.stale ? 'N/A — stale' : `${m.valueNum ?? String(m.valueBool)} (${m.asOfDate})`}
+                        hint="Human-entered via the admin drawer; renders N/A when stale > 14 days."
+                      />
+                    ))
+                  )}
+                </div>
               )}
             </div>
-          ))}
-          {data.tripwires.length === 0 && (
-            <p className="text-sm text-navy/60">No evaluations logged yet.</p>
-          )}
-        </div>
+          );
+        })}
       </section>
 
-      {/* 3 — Layer panels */}
-      <section className="mt-8">
-        <h2 className="text-xl">Layer panels</h2>
-        <div className="mt-3 grid gap-4 md:grid-cols-2">
-          {LAYERS.map((layer) => (
-            <div key={layer.key} className="rounded-lg border border-navy/15 bg-white p-4">
-              <h3 className="text-base">{layer.title}</h3>
-              <p className="mt-1 text-xs text-navy/60">{LAYER_THEORY[layer.key]}</p>
-              <table className="mt-2 w-full text-sm">
-                <tbody>
-                  {layer.ids.map((id) => {
-                    const t = byId.get(id);
-                    return (
-                      <tr key={id} className="border-t border-navy/10">
-                        <td className="py-1.5 pr-2 font-medium">
-                          {TRIPWIRE_DOCS[id] ? (
-                            <Hint text={TRIPWIRE_DOCS[id]!.summary}>
-                              <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
-                                {id}
-                              </span>
-                            </Hint>
-                          ) : (
-                            id
-                          )}
-                        </td>
-                        <td className="py-1.5 pr-2">{t?.reading ?? 'N/A'}</td>
-                        <td className="py-1.5">{t ? <StatusChip status={t.status} /> : '—'}</td>
-                      </tr>
-                    );
-                  })}
-                  {layer.key === 'L2' && (
-                    <>
-                      <tr className="border-t border-navy/10">
-                        <td className="py-1.5 pr-2 font-medium">
-                          <Hint text="CFTC Commitments of Traders: E-mini S&P net speculative positioning, expressed as a z-score vs its own 3-year history. Crowded longs = fuel for mechanical selling. Probation series — context only, no trigger status.">
-                            <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
-                              COT_ES_NET_SPEC_Z
-                            </span>
-                          </Hint>
-                        </td>
-                        <td className="py-1.5 pr-2">{data.contextSeries.cotZ?.toFixed(2) ?? 'N/A — weekly'}</td>
-                        <td className="py-1.5 text-xs text-navy/50">probation</td>
-                      </tr>
-                      {data.manualEntries.length === 0 && (
-                        <tr className="border-t border-navy/10">
-                          <td className="py-1.5 pr-2 font-medium">
-                            <Hint text="Human-entered seller-activation context: Alight 401(k) trading index (retail panic flows) and dealer gamma positioning (whether market makers amplify or dampen moves). Entered via the admin drawer; renders N/A when stale > 14 days.">
-                              <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
-                                ALIGHT / GAMMA
-                              </span>
-                            </Hint>
-                          </td>
-                          <td className="py-1.5 pr-2">N/A — manual pending</td>
-                          <td className="py-1.5 text-xs text-navy/50">stale &gt;14d flagged</td>
-                        </tr>
-                      )}
-                      {data.manualEntries.map((m) => (
-                        <tr key={m.field} className="border-t border-navy/10">
-                          <td className="py-1.5 pr-2 font-medium">{m.field}</td>
-                          <td className="py-1.5 pr-2">
-                            {m.stale ? 'N/A — stale' : (m.valueNum ?? String(m.valueBool))} ({m.asOfDate})
-                          </td>
-                          <td className="py-1.5 text-xs text-navy/50">manual</td>
-                        </tr>
-                      ))}
-                    </>
-                  )}
-                  {layer.key === 'L1' && (
-                    <tr className="border-t border-navy/10">
-                      <td className="py-1.5 pr-2 font-medium">
-                        <Hint text="Investment-grade and high-yield option-adjusted spreads — the market-price complement to the Baa−10y series. Context only until the Jan-2027 calibration adds them to the backtest; no trigger status before then, enforced in code.">
-                          <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
-                            IG / HY OAS
-                          </span>
-                        </Hint>
-                      </td>
-                      <td className="py-1.5 pr-2">
-                        {data.contextSeries.igOas?.toFixed(2) ?? 'N/A'} / {data.contextSeries.hyOas?.toFixed(2) ?? 'N/A'}
-                      </td>
-                      <td className="py-1.5 text-xs text-navy/50">context only — no trigger status until Jan-2027 calibration</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3b — Global context: correlated international indices */}
-      <section className="mt-8">
+      {/* 3 — Global context: is the selling worldwide or local? */}
+      <section className="mt-10">
         <h2 className="text-xl">
-          <Hint text="Correlated selling across regions distinguishes global repricing from a local shakeout. Context only — like VIX, this panel can never move the tier. See the methodology section for the theory and precedents.">
+          <Hint text="Correlated selling across regions distinguishes global repricing from a local shakeout. Context only — like VIX, this panel can never move the tier. See the methodology page for the theory and precedents.">
             <span className="underline decoration-navy/30 decoration-dotted underline-offset-4">
-              Global context — international indices
+              Global context — is the selling worldwide?
             </span>
           </Hint>
         </h2>
@@ -367,87 +390,94 @@ export default async function CorrectionDashboard() {
         </div>
       </section>
 
-      {/* 4 — Tier history */}
-      <section className="mt-8">
-        <h2 className="text-xl">Tier history</h2>
-        <div className="mt-3 overflow-x-auto rounded-lg border border-navy/15 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-navy/60">
-              <tr>
-                <th className="p-2">Entered</th>
-                <th className="p-2">Tier</th>
-                <th className="p-2">Entry reason</th>
-                <th className="p-2">Drawdown</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.tierHistory.map((h, i) => (
-                <tr key={i} className="border-t border-navy/10">
-                  <td className="p-2 whitespace-nowrap">{h.enteredAt}</td>
-                  <td className="p-2 font-semibold">TIER {h.tier}</td>
-                  <td className="p-2">{h.reason}</td>
-                  <td className="p-2">{h.drawdownPct !== null ? `${h.drawdownPct.toFixed(1)}%` : '—'}</td>
-                </tr>
-              ))}
-              {data.tierHistory.length === 0 && (
-                <tr>
-                  <td className="p-3 text-navy/60" colSpan={4}>
-                    No transitions yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* 5 — FP ledger */}
-      <section className="mt-8">
-        <h2 className="text-xl">False-positive ledger</h2>
-        <p className="text-sm text-navy/60">
-          Every TRIGGERED / FIRED / ESCALATE reading opens a 9-month outcome window (did a ≥10% event
-          follow?). Outcomes feed the pre-committed retirement criteria.
+      {/* 4 — The record: append-only history & falsifiability */}
+      <section className="mt-10">
+        <h2 className="text-xl">The record — append-only</h2>
+        <p className="mt-1 max-w-3xl text-sm text-navy/60">
+          Every transition and every triggered signal is logged permanently (database-enforced).
+          Triggered readings open a 9-month outcome window — did a ≥10% event follow? — feeding the
+          pre-committed retirement criteria.
         </p>
-        <div className="mt-3 overflow-x-auto rounded-lg border border-navy/15 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-navy/60">
-              <tr>
-                <th className="p-2">Tripwire</th>
-                <th className="p-2">Status</th>
-                <th className="p-2">Triggered</th>
-                <th className="p-2">Window ends</th>
-                <th className="p-2">Outcome</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.fpLedger.map((f, i) => (
-                <tr key={i} className="border-t border-navy/10">
-                  <td className="p-2 font-medium">{f.tripwire}</td>
-                  <td className="p-2">
-                    <StatusChip status={f.status} />
-                  </td>
-                  <td className="p-2 whitespace-nowrap">{f.triggeredOn}</td>
-                  <td className="p-2 whitespace-nowrap">{f.windowEnds}</td>
-                  <td className="p-2">
-                    {f.outcome}
-                    {f.note ? <span className="text-navy/50"> — {f.note}</span> : null}
-                  </td>
-                </tr>
-              ))}
-              {data.fpLedger.length === 0 && (
-                <tr>
-                  <td className="p-3 text-navy/60" colSpan={5}>
-                    No live triggers recorded yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="mt-3 grid gap-4 lg:grid-cols-2">
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-navy/60">Tier history</h3>
+            <div className="mt-2 overflow-x-auto rounded-lg border border-navy/15 bg-white">
+              <table className="w-full text-sm">
+                <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-navy/60">
+                  <tr>
+                    <th className="p-2">Entered</th>
+                    <th className="p-2">Tier</th>
+                    <th className="p-2">Entry reason</th>
+                    <th className="p-2">Drawdown</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.tierHistory.map((h, i) => (
+                    <tr key={i} className="border-t border-navy/10">
+                      <td className="p-2 whitespace-nowrap">{h.enteredAt}</td>
+                      <td className="p-2 font-semibold">TIER {h.tier}</td>
+                      <td className="p-2">{h.reason}</td>
+                      <td className="p-2">{h.drawdownPct !== null ? `${h.drawdownPct.toFixed(1)}%` : '—'}</td>
+                    </tr>
+                  ))}
+                  {data.tierHistory.length === 0 && (
+                    <tr>
+                      <td className="p-3 text-navy/60" colSpan={4}>
+                        No transitions yet — the live record starts with the first Tier-1 entry.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-navy/60">
+              False-positive ledger
+            </h3>
+            <div className="mt-2 overflow-x-auto rounded-lg border border-navy/15 bg-white">
+              <table className="w-full text-sm">
+                <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-navy/60">
+                  <tr>
+                    <th className="p-2">Tripwire</th>
+                    <th className="p-2">Status</th>
+                    <th className="p-2">Triggered</th>
+                    <th className="p-2">Window ends</th>
+                    <th className="p-2">Outcome</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.fpLedger.map((f, i) => (
+                    <tr key={i} className="border-t border-navy/10">
+                      <td className="p-2 font-medium">{f.tripwire}</td>
+                      <td className="p-2">
+                        <StatusChip status={f.status} />
+                      </td>
+                      <td className="p-2 whitespace-nowrap">{f.triggeredOn}</td>
+                      <td className="p-2 whitespace-nowrap">{f.windowEnds}</td>
+                      <td className="p-2">
+                        {f.outcome}
+                        {f.note ? <span className="text-navy/50"> — {f.note}</span> : null}
+                      </td>
+                    </tr>
+                  ))}
+                  {data.fpLedger.length === 0 && (
+                    <tr>
+                      <td className="p-3 text-navy/60" colSpan={5}>
+                        No live triggers yet — every future TRIGGERED / FIRED / ESCALATE lands here
+                        with its outcome.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Methodology / rulebook pointer (full detail lives on its own page) */}
-      <section className="mt-8 rounded-lg border border-navy/15 bg-navy/[0.03] p-4 text-sm text-navy/70">
+      {/* 5 — Rulebook pointer */}
+      <section className="mt-10 rounded-lg border border-navy/15 bg-navy/[0.03] p-4 text-sm text-navy/70">
         Every reading above is compared against one of 16 numeric thresholds fixed by the 50-year
         backtest <em>before</em> the first live reading — frozen at the database level, changeable
         only by written justification, a 48-hour cool-off, and a second person&rsquo;s

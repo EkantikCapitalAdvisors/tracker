@@ -3,14 +3,19 @@ import { METHODOLOGY, STATUS_LEGEND, TIER_DOCS } from '@/lib/methodology';
 import { StatusChip } from './StatusChip';
 
 /**
- * "How to read this dashboard" — tier legend, status legend, and the
- * methodology commentary. Server-rendered, presentation only.
+ * "How to read this dashboard" — tier legend and status legend, collapsed to
+ * a single reference line so it never interrupts the banner → evidence flow.
+ * Server-rendered, presentation only.
  */
 export function Methodology() {
   return (
-    <section className="mt-8 rounded-lg border border-navy/15 bg-white p-5">
-      <h2 className="text-xl">How to read this dashboard</h2>
-      <p className="mt-2 max-w-4xl text-sm text-navy/75">{METHODOLOGY.intro}</p>
+    <details className="mt-4 rounded-lg border border-navy/15 bg-white">
+      <summary className="flex cursor-pointer select-none flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm font-medium text-navy/75 hover:bg-navy/[0.03]">
+        <span>New to this page? How to read it — tier &amp; status legends</span>
+        <span className="text-xs text-navy/40">click to expand</span>
+      </summary>
+      <div className="border-t border-navy/10 px-5 pb-5">
+      <p className="mt-4 max-w-4xl text-sm text-navy/75">{METHODOLOGY.intro}</p>
 
       {/* Tier legend */}
       <h3 className="mt-5 text-base">Tier legend</h3>
@@ -63,6 +68,7 @@ export function Methodology() {
           Read the full methodology →
         </Link>
       </p>
-    </section>
+      </div>
+    </details>
   );
 }
