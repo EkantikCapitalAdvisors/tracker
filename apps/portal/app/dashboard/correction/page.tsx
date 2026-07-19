@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { loadDashboard, type DashboardData, type TripwireCard } from '@/lib/data';
 import { Sparkline } from '@/components/Sparkline';
 import { StatusChip } from '@/components/StatusChip';
@@ -47,7 +48,10 @@ export default async function CorrectionDashboard() {
         <h1 className="mt-1 text-3xl">Correction Dashboard</h1>
         <p className="text-sm text-navy/60">
           Measure the seller, not the headline. Thresholds frozen by the 50-year backtest; changes
-          only via governance protocol.
+          only via governance protocol.{' '}
+          <Link href="/dashboard/positioning" className="text-gold underline">
+            Market Positioning ladder →
+          </Link>
         </p>
       </header>
 
