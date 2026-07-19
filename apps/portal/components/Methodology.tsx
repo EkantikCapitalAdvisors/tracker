@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { METHODOLOGY, STATUS_LEGEND, TIER_DOCS } from '@/lib/methodology';
 import { StatusChip } from './StatusChip';
 
@@ -54,26 +55,14 @@ export function Methodology() {
         ))}
       </div>
 
-      {/* Deep-dive commentary */}
-      <div className="mt-5 space-y-2">
-        {(
-          [
-            ['Historical base rates — 54 events, 1974–2026', METHODOLOGY.baseRates],
-            ['The failed-recovery router — why 30/60 trading days', METHODOLOGY.router],
-            ['Depth engine — why a range and never a point', METHODOLOGY.depthEngine],
-            ['Global context — correlated international markets', METHODOLOGY.global],
-            ['Falsifiability — FP ledger and retirement criteria', METHODOLOGY.falsifiability],
-            ['Governance — why the thresholds cannot drift', METHODOLOGY.governance],
-          ] as const
-        ).map(([title, body]) => (
-          <details key={title} className="rounded border border-navy/10 bg-navy/[0.02] px-3 py-2">
-            <summary className="cursor-pointer select-none text-sm font-medium text-navy/80">
-              {title}
-            </summary>
-            <p className="mt-2 max-w-4xl text-sm text-navy/70">{body}</p>
-          </details>
-        ))}
-      </div>
+      {/* Full detail lives on its own page — keep the daily view uncluttered */}
+      <p className="mt-5 border-t border-navy/10 pt-3 text-sm text-navy/70">
+        Want the deeper material — historical base rates, the failed-recovery router, the depth
+        engine, global context, falsifiability, governance, and the frozen-threshold rulebook?{' '}
+        <Link href="/dashboard/methodology" className="text-gold underline">
+          Read the full methodology →
+        </Link>
+      </p>
     </section>
   );
 }

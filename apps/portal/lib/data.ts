@@ -103,6 +103,23 @@ function pearson(pairs: [number, number][]): number | null {
   return sxy / Math.sqrt(sxx * syy);
 }
 
+/** Lightweight loader for the methodology page — thresholds only. */
+export async function loadThresholdsOnly(): Promise<
+  { key: string; value: number; unit: string; basis: string; frozen: boolean }[]
+> {
+  const { data } = await db()
+    .from('cd_thresholds')
+    .select('key,value,unit,basis,frozen')
+    .order('key');
+  return (data ?? []).map((t) => ({
+    key: t.key,
+    value: t.value,
+    unit: t.unit,
+    basis: t.basis,
+    frozen: t.frozen,
+  }));
+}
+
 /** Context-only panel: intl drawdowns + 60-session return correlation vs SP500. */
 async function loadIntlContext(): Promise<IntlIndexRow[]> {
   const spx = await series('SP500', 140);

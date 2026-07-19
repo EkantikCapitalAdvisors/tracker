@@ -425,31 +425,15 @@ export default async function CorrectionDashboard() {
         </div>
       </section>
 
-      {/* Frozen thresholds reference */}
-      <section className="mt-8">
-        <h2 className="text-xl">Frozen thresholds</h2>
-        <div className="mt-3 overflow-x-auto rounded-lg border border-navy/15 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-navy/60">
-              <tr>
-                <th className="p-2">Key</th>
-                <th className="p-2">Value</th>
-                <th className="p-2">Unit</th>
-                <th className="p-2">Backtest basis</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.thresholds.map((t) => (
-                <tr key={t.key} className="border-t border-navy/10">
-                  <td className="p-2 font-mono text-xs">{t.key}</td>
-                  <td className="p-2">{t.value}</td>
-                  <td className="p-2">{t.unit}</td>
-                  <td className="p-2 text-navy/70">{t.basis}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Methodology / rulebook pointer (full detail lives on its own page) */}
+      <section className="mt-8 rounded-lg border border-navy/15 bg-navy/[0.03] p-4 text-sm text-navy/70">
+        Every reading above is compared against one of 16 numeric thresholds fixed by the 50-year
+        backtest <em>before</em> the first live reading — frozen at the database level, changeable
+        only by written justification, a 48-hour cool-off, and a second person&rsquo;s
+        countersignature.{' '}
+        <Link href="/dashboard/methodology" className="text-gold underline">
+          Read the full methodology and the frozen-threshold rulebook →
+        </Link>
       </section>
 
       {/* 6 — Admin drawer */}
