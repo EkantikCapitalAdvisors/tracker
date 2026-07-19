@@ -6,6 +6,11 @@ export default function Home() {
       <h1 className="text-3xl">Ekantik Research Portal</h1>
       <ul className="mt-6 list-disc pl-6">
         <li>
+          <Link className="text-gold underline" href="/dashboard/manual">
+            Investor Manual — Start Here
+          </Link>
+        </li>
+        <li className="mt-2">
           <Link className="text-gold underline" href="/dashboard/positioning">
             Market Positioning — Pre-Committed Allocation Ladder
           </Link>

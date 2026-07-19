@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation';
  * Dashboard is the evidence behind it; Methodology is the rulebook.
  */
 const TABS = [
+  { href: '/dashboard/manual', step: '0', label: 'Investor Manual', sub: 'START HERE — the guide' },
   { href: '/dashboard/positioning', step: '1', label: 'Positioning', sub: 'WHAT — the allocation' },
   { href: '/dashboard/correction', step: '2', label: 'Correction Dashboard', sub: 'WHY — the evidence' },
   { href: '/dashboard/methodology', step: '3', label: 'Methodology', sub: 'RULES — the backtest' },
