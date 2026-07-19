@@ -103,6 +103,40 @@ function pearson(pairs: [number, number][]): number | null {
   return sxy / Math.sqrt(sxx * syy);
 }
 
+/** Lightweight loader for the landing page — current state + board statuses. */
+export async function loadLandingState(): Promise<{
+  tier: number;
+  routerStatus: string | null;
+  drawdownPct: number | null;
+  asOf: string | null;
+  statuses: Map<string, string>;
+} | null> {
+  const client = db();
+  const [{ data: stateRows }, { data: lastTrip }] = await Promise.all([
+    client.from('cd_state_log').select('tier,drawdown_pct,engine_state').order('id', { ascending: false }).limit(1),
+    client.from('cd_tripwire_log').select('as_of_date').order('id', { ascending: false }).limit(1),
+  ]);
+  const state = stateRows?.[0];
+  if (!state) return null;
+  const asOf = (lastTrip?.[0]?.as_of_date as string | undefined) ?? null;
+  const statuses = new Map<string, string>();
+  if (asOf) {
+    const { data: board } = await client
+      .from('cd_tripwire_log')
+      .select('tripwire,status')
+      .eq('as_of_date', asOf);
+    for (const row of board ?? []) statuses.set(row.tripwire as string, row.status as string);
+  }
+  const engine = (state.engine_state ?? null) as { routerStatus?: string } | null;
+  return {
+    tier: state.tier as number,
+    routerStatus: engine?.routerStatus ?? null,
+    drawdownPct: (state.drawdown_pct as number | null) ?? null,
+    asOf,
+    statuses,
+  };
+}
+
 /** Lightweight loader for the methodology page — thresholds only. */
 export async function loadThresholdsOnly(): Promise<
   { key: string; value: number; unit: string; basis: string; frozen: boolean }[]
