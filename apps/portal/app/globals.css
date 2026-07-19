@@ -11,3 +11,21 @@ h2,
 h3 {
   @apply font-heading;
 }
+
+/* Deep-link landing: flash the card a driver link points at. */
+:target {
+  scroll-margin-top: 5rem;
+}
+#state:target,
+[id^='tw-']:target {
+  animation: cd-flash 2.2s ease-out 1;
+  border-radius: 0.5rem;
+}
+@keyframes cd-flash {
+  0% {
+    box-shadow: 0 0 0 4px rgba(200, 169, 81, 0.95);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(200, 169, 81, 0);
+  }
+}

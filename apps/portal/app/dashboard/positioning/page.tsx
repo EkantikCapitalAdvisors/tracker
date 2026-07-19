@@ -69,10 +69,7 @@ export default async function PositioningPage() {
         <h1 className="mt-1 text-3xl">Market Positioning</h1>
         <p className="text-sm text-navy/60">
           Pre-committed equity deployment, driven by the live correction state machine — no
-          discretionary score.{' '}
-          <Link href="/dashboard/correction" className="text-gold underline">
-            See the full Correction Dashboard →
-          </Link>
+          discretionary score.
         </p>
       </header>
 
@@ -92,11 +89,19 @@ export default async function PositioningPage() {
             {pos.zone}
           </span>
         </div>
-        <p className="mt-2 text-sm text-ivory/80">
-          Because: <span className="font-semibold">{pos.row.condition}</span> · S&P{' '}
-          {s.spClose?.toFixed(0)} · {s.drawdownPct?.toFixed(1)}% below the cycle high · as of{' '}
-          {s.spDate}
-        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ivory/80">
+          <span>
+            Because: <span className="font-semibold">{pos.row.condition}</span> · S&P{' '}
+            {s.spClose?.toFixed(0)} · {s.drawdownPct?.toFixed(1)}% below the cycle high · as of{' '}
+            {s.spDate}
+          </span>
+          <Link
+            href="/dashboard/correction#state"
+            className="rounded-md border border-gold/60 bg-gold/15 px-3 py-1.5 font-semibold text-gold transition-colors hover:bg-gold/25"
+          >
+            Why? See the live evidence →
+          </Link>
+        </div>
 
         {/* Gauge: 0 (flat) → 100 (fully invested) */}
         <div className="relative mt-5">
@@ -128,30 +133,30 @@ export default async function PositioningPage() {
         </p>
       </section>
 
-      {/* Drivers */}
+      {/* Drivers — each chip deep-links to its evidence card */}
       <section className="mt-6">
         <h2 className="text-xl">Current drivers</h2>
         <div className="mt-2 flex flex-wrap gap-2">
           {pos.drivers.map((d) => (
-            <span
+            <Link
               key={d.name}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${
+              href={d.href}
+              title={`See the ${d.name} evidence on the Correction Dashboard`}
+              className={`group rounded-full border px-3 py-1 text-xs font-semibold transition-shadow hover:shadow-md ${
                 d.bearish
                   ? 'border-triggered/50 bg-triggered/10 text-triggered'
                   : 'border-quiet/40 bg-quiet/10 text-quiet'
               }`}
             >
               {d.name}: {d.value}
-            </span>
+              <span className="ml-1 text-navy/40 transition-colors group-hover:text-navy/70">→</span>
+            </Link>
           ))}
         </div>
         <p className="mt-2 text-xs text-navy/60">
-          Red = currently pushing deployment down. Every driver is a frozen-threshold reading from
-          the tripwire board — hover the same signals on the{' '}
-          <Link href="/dashboard/correction" className="text-gold underline">
-            Correction Dashboard
-          </Link>{' '}
-          for theory and precedent.
+          Red = currently pushing deployment down. <span className="font-medium">Click any driver</span>{' '}
+          to jump to its evidence card on the Correction Dashboard — the card will flash so you land
+          on exactly the signal that set this level.
         </p>
       </section>
 

@@ -97,7 +97,8 @@ export interface PositioningResult {
   equityPct: number;
   cashPct: number;
   zone: 'FULLY INVESTED' | 'TRIMMED' | 'REDUCED' | 'DEFENSIVE' | 'FLAT';
-  drivers: { name: string; value: string; bearish: boolean }[];
+  /** `href` deep-links to the driver's evidence card on the Correction Dashboard. */
+  drivers: { name: string; value: string; bearish: boolean; href: string }[];
 }
 
 /** Deterministic mapping — same inputs, same answer, no discretion. */
@@ -131,13 +132,14 @@ export function computePositioning(input: PositioningInput): PositioningResult {
             ? 'DEFENSIVE'
             : 'FLAT';
 
+  const evidence = (anchor: string) => `/dashboard/correction#${anchor}`;
   const drivers = [
-    { name: 'Tier', value: `TIER ${input.tier}`, bearish: input.tier >= 1 },
-    { name: 'Router', value: input.routerStatus ?? 'INACTIVE', bearish: input.routerStatus === 'ESCALATE' },
-    { name: 'Policy', value: constrained ? 'CONSTRAINED' : 'FREE', bearish: constrained },
-    { name: 'Credit impulse', value: s('CREDIT_IMPULSE'), bearish: creditImpulse },
-    { name: 'Credit crisis', value: s('CREDIT_CRISIS'), bearish: creditCrisis },
-    { name: 'Sahm gate', value: s('SAHM_GATE'), bearish: sahmFired || s('SAHM_GATE') === 'ARMED' },
+    { name: 'Tier', value: `TIER ${input.tier}`, bearish: input.tier >= 1, href: evidence('state') },
+    { name: 'Router', value: input.routerStatus ?? 'INACTIVE', bearish: input.routerStatus === 'ESCALATE', href: evidence('tw-FAILED_RECOVERY') },
+    { name: 'Policy', value: constrained ? 'CONSTRAINED' : 'FREE', bearish: constrained, href: evidence('tw-POLICY_SWITCH') },
+    { name: 'Credit impulse', value: s('CREDIT_IMPULSE'), bearish: creditImpulse, href: evidence('tw-CREDIT_IMPULSE') },
+    { name: 'Credit crisis', value: s('CREDIT_CRISIS'), bearish: creditCrisis, href: evidence('tw-CREDIT_CRISIS') },
+    { name: 'Sahm gate', value: s('SAHM_GATE'), bearish: sahmFired || s('SAHM_GATE') === 'ARMED', href: evidence('tw-SAHM_GATE') },
   ];
 
   return { row, equityPct: row.equityPct, cashPct: 100 - row.equityPct, zone, drivers };

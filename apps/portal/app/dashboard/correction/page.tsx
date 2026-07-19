@@ -6,6 +6,7 @@ import { AdminDrawer } from '@/components/AdminDrawer';
 import { Methodology } from '@/components/Methodology';
 import { Hint } from '@/components/Hint';
 import { LAYER_THEORY, TIER_DOCS, TRIPWIRE_DOCS } from '@/lib/methodology';
+import { computePositioning } from '@/lib/positioning';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,13 @@ export default async function CorrectionDashboard() {
 
   const s = data.state;
   const byId = new Map(data.tripwires.map((t) => [t.id, t]));
+  const pos = s
+    ? computePositioning({
+        tier: s.tier,
+        routerStatus: s.routerStatus,
+        statuses: new Map(data.tripwires.map((t) => [String(t.id), String(t.status)])),
+      })
+    : null;
 
   return (
     <main className="mx-auto max-w-6xl p-6 md:p-10">
@@ -47,16 +55,29 @@ export default async function CorrectionDashboard() {
         </p>
         <h1 className="mt-1 text-3xl">Correction Dashboard</h1>
         <p className="text-sm text-navy/60">
-          Measure the seller, not the headline. Thresholds frozen by the 50-year backtest; changes
-          only via governance protocol.{' '}
-          <Link href="/dashboard/positioning" className="text-gold underline">
-            Market Positioning ladder →
-          </Link>
+          The evidence behind the positioning: measure the seller, not the headline. Thresholds
+          frozen by the 50-year backtest; changes only via governance protocol.
         </p>
       </header>
 
+      {/* 0 — What the evidence currently means (hand-off from Positioning) */}
+      {pos && (
+        <Link
+          href="/dashboard/positioning"
+          className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gold/50 bg-gold/10 px-4 py-2.5 text-sm transition-colors hover:bg-gold/20"
+        >
+          <span className="text-navy/80">
+            This evidence currently sets the policy at{' '}
+            <span className="font-semibold text-navy">
+              {pos.equityPct}% invested · {pos.cashPct}% cash ({pos.zone})
+            </span>
+          </span>
+          <span className="font-semibold text-[#8a6d1f]">← Back to Positioning (the what)</span>
+        </Link>
+      )}
+
       {/* 1 — State banner */}
-      <section className="rounded-lg border border-navy/15 bg-navy p-6 text-ivory">
+      <section id="state" className="rounded-lg border border-navy/15 bg-navy p-6 text-ivory">
         {s ? (
           <div className="grid gap-4 md:grid-cols-4">
             <div>
@@ -128,7 +149,7 @@ export default async function CorrectionDashboard() {
         <h2 className="text-xl">Tripwire board</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {data.tripwires.map((t: TripwireCard) => (
-            <div key={t.id} className="rounded-lg border border-navy/15 bg-white p-4">
+            <div key={t.id} id={`tw-${t.id}`} className="rounded-lg border border-navy/15 bg-white p-4">
               <div className="flex items-center justify-between">
                 {TRIPWIRE_DOCS[t.id] ? (
                   <Hint text={TRIPWIRE_DOCS[t.id]!.summary}>
