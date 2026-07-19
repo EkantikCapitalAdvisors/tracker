@@ -17,9 +17,12 @@ export default function WelcomePage() {
           Measure the seller, not the headline.
         </p>
         <p className="mt-4 text-sm leading-relaxed text-ivory/75">
-          This research portal is shared personally, not published broadly. Tell us who you are and
-          you&rsquo;re in — no password, no verification email, and your details are used for one
-          purpose only: so Ekantik knows who its research has been shared with.
+          This research portal is shared by personal introduction, not published broadly — there is
+          no password, because your identity <em>is</em> your access. Register with the email you
+          actually use: it is how your access is recognized when the register is reviewed, how a
+          time-sensitive note — a tier change, a sentinel briefing, an update to the methodology —
+          reaches you, and how your access is restored on a new device. An address that
+          can&rsquo;t receive mail can&rsquo;t do any of that.
         </p>
 
         <Suspense>

@@ -66,6 +66,9 @@ export function WelcomeForm() {
           className="mt-1 w-full rounded-md border border-ivory/25 bg-ivory/10 px-3 py-2 text-sm text-ivory placeholder-ivory/40 outline-none focus:border-gold"
           placeholder="jane@example.com"
         />
+        <p className="mt-1 text-xs text-ivory/50">
+          Use the address you&rsquo;d want a correction alert to reach.
+        </p>
       </div>
       {error && <p className="text-sm text-[#e8a08d]">{error}</p>}
       <button
