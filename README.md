@@ -67,7 +67,9 @@ npm test          # 296 tests incl. 252 replay assertions
 1. **Supabase** — apply `supabase/migrations/0001_correction_dashboard.sql` (tables, triggers,
    RLS internal-only, threshold seed). Create a private storage bucket `cd-exports`.
 2. **Railway worker** — deploy `apps/worker` (`npm run build && npm start`) with env from
-   `.env.example`. It consumes the `correction-dashboard` BullMQ queue on Upstash Redis.
+   `.env.example`. It polls the Supabase-backed `cd_jobs` queue (v2.2 — the earlier
+   Upstash/BullMQ queue was retired after idle polling exhausted the metered free tier;
+   `REDIS_URL` is no longer required).
 3. **Vercel portal** — deploy `apps/portal`. `vercel.json` schedules the crons (UTC ≈ CT+5,
    adjust for CST if desired):
    - daily ingest 22:35 UTC Mon–Fri → post-close evaluation; daily mini-sentinel auto-activates while Tier ≥ 1

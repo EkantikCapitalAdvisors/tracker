@@ -12,8 +12,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
     "@ekantik/correction-engine": "*",
-    "@supabase/supabase-js": "^2.110.0",
-    "bullmq": "^5.80.0"
+    "@supabase/supabase-js": "^2.110.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

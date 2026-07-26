@@ -17,9 +17,6 @@ export const env = {
   get SUPABASE_SERVICE_ROLE() {
     return required('SUPABASE_SERVICE_ROLE');
   },
-  get REDIS_URL() {
-    return required('REDIS_URL');
-  },
   get ANTHROPIC_API_KEY() {
     return process.env.ANTHROPIC_API_KEY ?? null;
   },
