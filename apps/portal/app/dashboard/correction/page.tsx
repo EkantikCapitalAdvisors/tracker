@@ -7,6 +7,8 @@ import { Methodology } from '@/components/Methodology';
 import { Hint } from '@/components/Hint';
 import { LAYER_THEORY, TIER_DOCS, TRIPWIRE_DOCS } from '@/lib/methodology';
 import { computePositioning } from '@/lib/positioning';
+import { loadPlainState, type PlainState } from '@/lib/plainState';
+import { loadWorkbench, rankAnalogs, type Workbench } from '@/lib/workbench';
 
 export const dynamic = 'force-dynamic';
 
@@ -112,13 +114,22 @@ export default async function CorrectionDashboard() {
   const s = data.state;
   const byId = new Map(data.tripwires.map((t) => [t.id, t]));
   const boardAsOf = data.tripwires[0]?.asOfDate ?? null;
-  const pos = s
-    ? computePositioning({
-        tier: s.tier,
-        routerStatus: s.routerStatus,
-        statuses: new Map(data.tripwires.map((t) => [String(t.id), String(t.status)])),
+  const statuses = new Map(data.tripwires.map((t) => [String(t.id), String(t.status)]));
+  const pos = s ? computePositioning({ tier: s.tier, routerStatus: s.routerStatus, statuses }) : null;
+
+  // M2 operator panels — fail-soft: the engine room renders without them.
+  const [work, plain]: [Workbench | null, PlainState | null] = await Promise.all([
+    loadWorkbench().catch(() => null),
+    loadPlainState().catch(() => null),
+  ]);
+  const analogs = plain
+    ? rankAnalogs({
+        policyConstrained: statuses.get('POLICY_SWITCH') === 'CONSTRAINED',
+        sahmActive: ['ARMED', 'FIRED'].includes(statuses.get('SAHM_GATE') ?? ''),
+        creditDeltaBp: plain.raw.creditDelta3mBp,
+        capeTop: plain.raw.capeTercile === 2,
       })
-    : null;
+    : [];
 
   return (
     <main className="mx-auto max-w-6xl p-6 md:p-10">
@@ -155,6 +166,22 @@ export default async function CorrectionDashboard() {
           <span className="font-semibold text-[#8a6d1f]">← Back to Positioning (the what)</span>
         </Link>
       )}
+
+      {/* 0b — Divergence strip: what the client Plain View is "rounding" right now */}
+      {plain &&
+        (plain.divergences.length > 0 ? (
+          <div className="mb-4 rounded-lg border border-[#c2622a]/40 bg-[#c2622a]/10 px-4 py-2 text-sm text-navy/80">
+            <span className="font-semibold">Client-view check:</span> the Plain View is currently
+            ahead of the raw engine on{' '}
+            {plain.divergences.map((d) => `${d.gauge} (${d.color} — ${d.reason})`).join('; ')}.
+            Presentation bands only, never state inputs.
+          </div>
+        ) : (
+          <p className="mb-4 px-1 text-xs text-navy/50">
+            Client-view check: the Plain View currently shows exactly what the machine shows — no
+            presentation rounding in effect.
+          </p>
+        ))}
 
       {/* 1 — State banner: the verdict */}
       <section id="state" className="rounded-lg border border-navy/15 bg-navy p-6 text-ivory">
@@ -323,6 +350,152 @@ export default async function CorrectionDashboard() {
           );
         })}
       </section>
+
+      {/* 2b — Operator: depth workbench (Tier-agnostic; official only at Tier ≥ 2) */}
+      {work && (
+        <section id="workbench" className="mt-10">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xl">Depth workbench</h2>
+            <span className="text-xs uppercase tracking-wide text-navy/45">operator instrument</span>
+          </div>
+          <p className="mt-1 max-w-3xl text-sm text-navy/60">
+            The engine&rsquo;s own depth function run on today&rsquo;s data — watch the estimate
+            form before it goes official.
+            {work.preActivation &&
+              ' Currently a pre-activation estimate: the range publishes only at Tier ≥ 2.'}
+          </p>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            {/* Range */}
+            <div className={`rounded-lg border bg-white p-4 ${work.preActivation ? 'border-dashed border-navy/30' : 'border-navy/15'}`}>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wide text-navy/60">
+                  {work.preActivation ? 'Pre-activation estimate' : 'Published depth range'}
+                </span>
+                {work.range && (
+                  <span className="rounded-full border border-navy/20 bg-navy/5 px-2 py-0.5 text-[10px] font-semibold text-navy/70">
+                    {work.range.baseBand}
+                  </span>
+                )}
+              </div>
+              {work.range ? (
+                <>
+                  <div className="mt-2 font-heading text-3xl">
+                    −{work.range.rangeLowPct.toFixed(1)}% … −{work.range.rangeHighPct.toFixed(1)}%
+                  </div>
+                  <p className="mt-1 text-xs text-navy/60">
+                    further decline from the cycle high · invalidation close{' '}
+                    <span className="font-semibold">{work.range.invalidationClose.toFixed(0)}</span>
+                  </p>
+                  {work.preActivation && (
+                    <p className="mt-2 text-xs font-medium text-[#8a6d1f]">
+                      Hypothetical — publishes only at Tier ≥ 2.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-2 text-sm text-navy/60">{work.rangeError ?? 'unavailable'}</p>
+              )}
+            </div>
+            {/* Cascade */}
+            <div className="rounded-lg border border-navy/15 bg-white p-4">
+              <span className="text-xs font-semibold uppercase tracking-wide text-navy/60">
+                Cascade scoring{work.range ? ` · net ${work.range.cascadeScore >= 0 ? '+' : ''}${work.range.cascadeScore}` : ''}
+              </span>
+              {work.range && (
+                <div className="mt-2 space-y-1 text-xs">
+                  {work.range.redFlags.map((f) => (
+                    <div key={f} className="text-triggered">▲ {f}</div>
+                  ))}
+                  {work.range.greenFlags.map((f) => (
+                    <div key={f} className="text-quiet">▼ {f}</div>
+                  ))}
+                  {work.range.redFlags.length === 0 && work.range.greenFlags.length === 0 && (
+                    <div className="text-navy/50">no flags</div>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Inputs & overlays */}
+            <div className="rounded-lg border border-navy/15 bg-white p-4 text-xs">
+              <span className="text-xs font-semibold uppercase tracking-wide text-navy/60">
+                Inputs &amp; overlays
+              </span>
+              <div className="mt-2 space-y-1.5 text-navy/70">
+                <div>
+                  Catalyst tag:{' '}
+                  <span className="font-semibold">
+                    {work.catalystTag ?? 'register empty — FUNDAMENTAL assumed'}
+                  </span>
+                </div>
+                <div>
+                  Valuation scaling:{' '}
+                  <span className="font-semibold">
+                    {work.range?.valuationScale !== null && work.range?.valuationScale !== undefined
+                      ? `×${work.range.valuationScale.toFixed(2)}`
+                      : 'skipped — P/E inputs DATA GAP'}
+                  </span>
+                </div>
+                <div>
+                  Policy overlay:{' '}
+                  <span className="font-semibold">
+                    {work.range?.policyOverlayApplied ? 'CONSTRAINED — upper half forced' : 'not applied (policy FREE)'}
+                  </span>
+                </div>
+              </div>
+              {work.range && work.range.notes.length > 0 && (
+                <ul className="mt-2 list-disc space-y-0.5 pl-4 text-[11px] text-navy/50">
+                  {work.range.notes.map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 2c — Operator: nearest historical analogs */}
+      {analogs.length > 0 && (
+        <section className="mt-8">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-xl">Nearest historical analogs</h2>
+            <span className="text-xs uppercase tracking-wide text-navy/45">
+              ranked on policy state · recession signal · credit widening
+            </span>
+          </div>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            {analogs.map((a) => (
+              <div key={a.name} className="rounded-lg border border-navy/15 bg-white p-4">
+                <div className="font-semibold">{a.name}</div>
+                <div className="mt-1 flex items-baseline gap-3">
+                  <span className="font-heading text-2xl text-triggered">−{a.depthPct.toFixed(1)}%</span>
+                  <span className="text-xs text-navy/60">peak → trough {a.durationDays} days</span>
+                </div>
+                <div className="mt-2 h-2 rounded-full bg-navy/10">
+                  <div
+                    className="h-2 rounded-full bg-triggered/70"
+                    style={{ width: `${Math.min(100, (a.depthPct / 60) * 100)}%` }}
+                  />
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {a.matchedOn.map((m) => (
+                    <span key={m} className="rounded-full border border-quiet/40 bg-quiet/10 px-2 py-0.5 text-[10px] font-medium text-quiet">
+                      {m}
+                    </span>
+                  ))}
+                  {a.matchedOn.length === 0 && (
+                    <span className="text-[10px] text-navy/50">weak match — shown for depth context</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-navy/50">
+            Catalog stores event endpoints (peak, trough, depth), not daily paths — bars compare
+            depth, not trajectory. Source: the 54-event replay catalog.
+          </p>
+        </section>
+      )}
 
       {/* 3 — Global context: is the selling worldwide or local? */}
       <section className="mt-10">

@@ -29,6 +29,14 @@ export interface PlainState {
   cashRule: { conditions: CashRuleCondition[]; allMet: boolean };
   /** Gauges whose color came from a presentation band, not raw engine status (operator divergence strip). */
   divergences: { gauge: string; color: string; reason: string }[];
+  /** Raw derived inputs — operator surfaces (analog ranking, workbench). */
+  raw: {
+    creditDelta3mBp: number | null;
+    creditLevelBp: number | null;
+    cpiYoYPct: number | null;
+    sahmValue: number | null;
+    capeTercile: 0 | 1 | 2 | null;
+  };
   updatedAt: string | null;
   cadence: string;
 }
@@ -97,6 +105,41 @@ async function loadBands(): Promise<PresentationBands> {
   } catch {
     return DEFAULT_BANDS;
   }
+}
+
+export interface ContextCard {
+  label: string;
+  value: string;
+  asOf: string | null;
+  note: string;
+}
+
+/** Long-horizon context (M3): colorless, decade-scale, never a timing input. */
+export async function loadContextCards(): Promise<ContextCard[]> {
+  const [debt, oil] = await Promise.all([series('GFDEGDQ188S', 4), series('DCOILWTICO', 4)]);
+  const last = (s: { d: string; v: number }[]) => s.at(-1) ?? null;
+  const d = last(debt);
+  const o = last(oil);
+  return [
+    {
+      label: 'US federal debt vs. GDP',
+      value: d ? `${d.v.toFixed(0)}%` : 'N/A',
+      asOf: d?.d ?? null,
+      note: 'Shapes the long game; has never timed a correction.',
+    },
+    {
+      label: 'US dollar share of world reserves',
+      value: 'N/A — manual',
+      asOf: null,
+      note: 'IMF COFER, quarterly; entered when reviewed.',
+    },
+    {
+      label: 'Oil (WTI)',
+      value: o ? `$${o.v.toFixed(0)}` : 'N/A',
+      asOf: o?.d ?? null,
+      note: 'Feeds inflation over months — watch the Fed gauge, not this.',
+    },
+  ];
 }
 
 /** Assemble the full Plain View model server-side (all strings composed here). */
@@ -196,6 +239,13 @@ export async function loadPlainState(): Promise<PlainState | null> {
         color: g.color,
         reason: `presentation band set ${g.label} while the frozen signal is quiet`,
       })),
+    raw: {
+      creditDelta3mBp,
+      creditLevelBp,
+      cpiYoYPct: cpiYoY,
+      sahmValue: sahm,
+      capeTercile: tercile,
+    },
     updatedAt: asOf,
     cadence: 'Updated after every market close · reviewed weekly; daily attention when any gauge leaves green',
   };

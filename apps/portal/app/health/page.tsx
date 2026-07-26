@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { loadPlainState, type PlainState } from '@/lib/plainState';
+import { loadContextCards, loadPlainState, type ContextCard, type PlainState } from '@/lib/plainState';
 import type { GaugeColor } from '@/lib/plainView';
 
 export const dynamic = 'force-dynamic';
@@ -57,8 +57,10 @@ function boldify(reading: string, bold: string) {
 export default async function HealthPage() {
   let ps: PlainState | null = null;
   let err: string | null = null;
+  let context: ContextCard[] = [];
   try {
     ps = await loadPlainState();
+    context = await loadContextCards().catch(() => []);
   } catch (e) {
     err = (e as Error).message;
   }
@@ -242,6 +244,27 @@ export default async function HealthPage() {
           ones.
         </p>
       </section>
+
+      {/* 6 — Long-horizon context (colorless by design) */}
+      {context.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-xl">The big slow numbers</h2>
+          <p className="mt-1 text-sm text-navy/60">
+            Context — these move over decades and are never a timing input, which is why they carry
+            no color.
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            {context.map((c) => (
+              <div key={c.label} className="rounded-lg border border-navy/15 bg-navy/[0.02] p-4">
+                <div className="text-xs font-semibold uppercase tracking-wide text-navy/55">{c.label}</div>
+                <div className="mt-1 font-heading text-2xl text-navy/80">{c.value}</div>
+                <div className="text-[11px] text-navy/45">{c.asOf ? `as of ${c.asOf}` : 'quarterly'}</div>
+                <p className="mt-1.5 text-xs text-navy/55">{c.note}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Deeper doors — sequenced, not hidden */}
       <section className="mt-8 flex flex-wrap gap-3">

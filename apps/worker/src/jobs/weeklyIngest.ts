@@ -5,6 +5,7 @@
  */
 
 import { env } from '../env.js';
+import { fetchFredSeries } from '../lib/fred.js';
 import { storeReadings } from '../lib/supabase.js';
 
 export async function runWeeklyIngest(): Promise<void> {
@@ -76,6 +77,23 @@ export async function runWeeklyIngest(): Promise<void> {
       { series_id: 'CAPE', as_of_date: today, value: null, source: 'multpl', data_gap: true },
     ]);
     console.error(`DATA_GAP CAPE: ${(err as Error).message}`);
+  }
+
+  // Long-horizon context series (v2.1 M3) — decade-scale, never timing inputs.
+  // Debt/GDP is quarterly, WTI daily; both fail-open. USD reserve share (IMF
+  // COFER) has no keyless API — entered manually, renders N/A until then.
+  for (const id of ['GFDEGDQ188S', 'DCOILWTICO']) {
+    try {
+      const obs = await fetchFredSeries(id, 120);
+      await storeReadings(
+        obs.map((o) => ({ series_id: id, as_of_date: o.date, value: o.value, source: 'FRED' })),
+      );
+    } catch (err) {
+      await storeReadings([
+        { series_id: id, as_of_date: today, value: null, source: 'FRED', data_gap: true },
+      ]);
+      console.error(`DATA_GAP ${id}: ${(err as Error).message}`);
+    }
   }
 
   // ICI weekly flows — release scrape is brittle; treated as probation/context.

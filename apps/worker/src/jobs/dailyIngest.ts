@@ -11,6 +11,7 @@ import { postThread } from '../lib/slack.js';
 import { db, storeReadings, type ReadingRow } from '../lib/supabase.js';
 import { assembleReadings } from '../derive.js';
 import { evaluateAndPersist } from '../state.js';
+import { recordStanceAndNotify } from '../lib/stance.js';
 import { formatSentinel, type SentinelContext } from '../sentinel.js';
 import { getPriorTier, getCatalystTag, listStaleManualFields } from './shared.js';
 
@@ -93,6 +94,13 @@ export async function runDailyIngest(): Promise<void> {
   const readings = await assembleReadings();
   const priorTier = await getPriorTier();
   const result = await evaluateAndPersist(readings);
+
+  // v2.1 §7 — client notices on deployment-rung change only (fail-open).
+  try {
+    await recordStanceAndNotify(result, readings.asOfDate);
+  } catch (err) {
+    console.error(`stance notice step failed: ${(err as Error).message}`);
+  }
 
   // Tier-1 entry requires an event-register entry within 48h; nag if absent.
   if (result.sideEffects.requireEventRegister) {
