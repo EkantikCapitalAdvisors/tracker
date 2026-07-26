@@ -10,9 +10,10 @@ import { usePathname } from 'next/navigation';
  */
 const TABS = [
   { href: '/dashboard/manual', step: '0', label: 'Investor Manual', sub: 'START HERE — the guide' },
-  { href: '/dashboard/positioning', step: '1', label: 'Positioning', sub: 'WHAT — the allocation' },
-  { href: '/dashboard/correction', step: '2', label: 'Correction Dashboard', sub: 'WHY — the evidence' },
-  { href: '/dashboard/methodology', step: '3', label: 'Methodology', sub: 'RULES — the backtest' },
+  { href: '/health', step: '1', label: 'Market Health', sub: 'PLAIN VIEW — 7 gauges' },
+  { href: '/dashboard/positioning', step: '2', label: 'Positioning', sub: 'WHAT — the allocation' },
+  { href: '/dashboard/correction', step: '3', label: 'Engine Room', sub: 'WHY — full methodology (dense)' },
+  { href: '/dashboard/methodology', step: '4', label: 'Methodology', sub: 'RULES — the backtest' },
 ];
 
 export function DashNav() {

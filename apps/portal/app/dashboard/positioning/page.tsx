@@ -66,7 +66,15 @@ export default async function PositioningPage() {
         <p className="text-xs uppercase tracking-widest text-navy/50">
           Ekantik Capital Advisors — Correction Intelligence Program
         </p>
-        <h1 className="mt-1 text-3xl">Market Positioning</h1>
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+          <h1 className="text-3xl">Market Positioning</h1>
+          <span className="inline-flex overflow-hidden rounded-md border border-navy/25 text-xs font-semibold">
+            <Link href="/health" className="px-3 py-1.5 text-navy/60 transition-colors hover:bg-navy/5">
+              Plain view
+            </Link>
+            <span className="bg-navy px-3 py-1.5 text-ivory">Full detail</span>
+          </span>
+        </div>
         <p className="text-sm text-navy/60">
           Pre-committed equity deployment, driven by the live correction state machine — no
           discretionary score.

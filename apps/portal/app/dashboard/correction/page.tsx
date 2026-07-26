@@ -123,7 +123,14 @@ export default async function CorrectionDashboard() {
   return (
     <main className="mx-auto max-w-6xl p-6 md:p-10">
       <header className="mb-6 border-b border-navy/15 pb-4">
-        <p className="text-xs uppercase tracking-widest text-navy/50">
+        <p className="text-xs text-navy/50">
+          <Link href="/health" className="text-gold underline">Plain View</Link>
+          <span className="mx-1.5">/</span>
+          <Link href="/dashboard/positioning" className="text-gold underline">Positioning</Link>
+          <span className="mx-1.5">/</span>
+          Engine room
+        </p>
+        <p className="mt-2 text-xs uppercase tracking-widest text-navy/50">
           Ekantik Capital Advisors — Correction Intelligence Program · internal instrument
         </p>
         <h1 className="mt-1 text-3xl">Correction Dashboard</h1>

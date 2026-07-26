@@ -2,14 +2,14 @@
   "name": "ekantik-correction-dashboard",
   "private": true,
   "version": "2.0.0",
-  "description": "Ekantik Correction Dashboard v2 — portal-integrated live correction-intelligence system",
+  "description": "Ekantik Correction Dashboard v2 \u2014 portal-integrated live correction-intelligence system",
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test --workspace @ekantik/correction-engine --workspace @ekantik/correction-worker",
+    "test": "npm run test --workspace @ekantik/correction-engine --workspace @ekantik/correction-worker --workspace @ekantik/research-portal",
     "build": "npm run build --workspaces --if-present"
   },
   "engines": {

@@ -20,12 +20,14 @@ export async function POST(req: Request) {
   }
 
   const client = db();
+  let audience = 'client'; // new registrations default to the Plain View surface
   const { data: existing } = await client
     .from('cd_visitors')
-    .select('id,visits')
+    .select('id,visits,audience')
     .eq('email', email)
     .limit(1);
   if (existing && existing.length > 0) {
+    audience = (existing[0]!.audience as string) ?? 'client';
     await client
       .from('cd_visitors')
       .update({ name, last_seen: new Date().toISOString(), visits: (existing[0]!.visits ?? 0) + 1 })
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
   }
 
   const cookie = await makeGateCookie(name, email);
-  const res = NextResponse.json({ ok: true });
+  const res = NextResponse.json({ ok: true, audience });
   if (cookie) {
     res.cookies.set(GATE_COOKIE, cookie, {
       httpOnly: true,

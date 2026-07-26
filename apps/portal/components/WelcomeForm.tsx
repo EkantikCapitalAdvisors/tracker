@@ -20,14 +20,16 @@ export function WelcomeForm() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ name, email }),
       });
-      const json = (await res.json()) as { ok?: boolean; error?: string };
+      const json = (await res.json()) as { ok?: boolean; error?: string; audience?: string };
       if (!res.ok || !json.ok) {
         setError(json.error ?? 'Something went wrong — please try again.');
         setBusy(false);
         return;
       }
       const next = params.get('next');
-      window.location.href = next && next.startsWith('/') ? next : '/';
+      // Clients land on the Plain View by default; a requested page always wins.
+      const fallback = json.audience === 'client' ? '/health' : '/';
+      window.location.href = next && next.startsWith('/') ? next : fallback;
     } catch {
       setError('Network error — please try again.');
       setBusy(false);
