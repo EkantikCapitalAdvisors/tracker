@@ -9,9 +9,10 @@ const JOBS = new Set([
   'friday-sentinel',
   'retirement-checks',
   'annual-export',
+  'test-notice',
 ]);
 
-/** Vercel Cron → enqueue the BullMQ job for the Railway worker. */
+/** Vercel Cron → enqueue the job for the Railway worker (cd_jobs queue). */
 export async function GET(req: Request, { params }: { params: { job: string } }) {
   const auth = req.headers.get('authorization');
   if (!process.env.CRON_SECRET || auth !== `Bearer ${process.env.CRON_SECRET}`) {

@@ -12,6 +12,7 @@ import { runWeeklyIngest } from './jobs/weeklyIngest.js';
 import { runFridaySentinel } from './jobs/fridaySentinel.js';
 import { runRetirementChecks } from './jobs/retirementChecks.js';
 import { runAnnualExport } from './jobs/annualExport.js';
+import { runTestNotice } from './jobs/testNotice.js';
 
 const POLL_MS = 15_000;
 
@@ -21,6 +22,7 @@ const handlers: Record<string, () => Promise<void>> = {
   'friday-sentinel': runFridaySentinel,
   'retirement-checks': runRetirementChecks,
   'annual-export': runAnnualExport,
+  'test-notice': runTestNotice,
 };
 
 let stopping = false;
