@@ -7,12 +7,14 @@
  *
  * Notices are rate-limited by design: they fire on LADDER RUNG changes only,
  * never on gauge color changes — scarcity of signal is the product. Every
- * notice is recorded in cd_client_notices; email goes out only when
- * RESEND_API_KEY + NOTICE_FROM_EMAIL are configured (sent_via='resend').
+ * notice is recorded in cd_client_notices regardless; delivery is handled by
+ * lib/notify.ts, whose provider is chosen by which env vars are present
+ * (SMTP / Resend / logged-only).
  */
 
 import type { EngineResult } from '@ekantik/correction-engine';
 import { db } from './supabase.js';
+import { deliverNotice } from './notify.js';
 
 const STANCE_NAMES: Record<string, string> = {
   T0: 'Fully invested',
@@ -115,29 +117,11 @@ export async function recordStanceAndNotify(result: EngineResult, asOfDate: stri
     .eq('audience', 'client');
   const recipients = clients ?? [];
 
-  let sentVia = 'logged';
-  const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.NOTICE_FROM_EMAIL;
-  if (apiKey && fromEmail && recipients.length > 0) {
-    try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
-        body: JSON.stringify({
-          from: fromEmail,
-          to: [fromEmail],
-          bcc: recipients.map((r) => r.email),
-          subject,
-          text: body,
-        }),
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (res.ok) sentVia = 'resend';
-      else console.error(`stance notice email failed: HTTP ${res.status}`);
-    } catch (err) {
-      console.error(`stance notice email failed: ${(err as Error).message}`);
-    }
-  }
+  const sentVia = await deliverNotice({
+    subject,
+    body,
+    recipients: recipients.map((r) => r.email as string),
+  });
 
   await db().from('cd_client_notices').insert({
     stance_from: from,
