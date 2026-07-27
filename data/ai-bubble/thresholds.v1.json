@@ -2,93 +2,496 @@
   "schema_version": "1.0",
   "framework_version": "1.0",
   "effective_from": "2026-07-08",
-  "hash": "PENDING",
-  "expected_tripwire_count": 27,
-  "_incomplete_note": "Tripwire definitions are pre-committed criteria and are sourced ONLY from the AI Bubble framework document. This file currently holds the subset specified in Build Spec v1.0. Entries with provisional=true were inferred from run examples and MUST be replaced with the framework text before publication. The validator fails while any provisional entry exists or the count is below expected_tripwire_count.",
+  "hash": "sha256:77bab0ab1306bd323a05e08c0edee4b8d65eede0d919aae15967839fba8fe0f7",
+  "expected_tripwire_count": 28,
+  "declared_upstream_hash": "sha256:17310df9557b71af9af0c438dd08d6921f79136892370f58172da78fa8bae550",
+  "_transcription_note": "Tier assignment and seller_class are authoritative (Build Spec v1.0 \u00a74.1). threshold_text marked text_source=derived_from_run was transcribed from the 2026-07-27 run rationales, not read from the framework document; it must be reconciled against the framework text and any correction published as an amendment. Scoring never reads threshold_text, so Index integrity does not depend on it. declared_upstream_hash records the framework's own hash for reconciliation.",
   "tiers": [
-    { "id": 0, "key": "ambient",   "name": "Ambient conditions", "weight": 0.15, "question": "Is spending running ahead of the revenue meant to justify it?" },
-    { "id": 1, "key": "narrative", "name": "Narrative break",    "weight": 0.20, "question": "Has the market stopped rewarding the story?" },
-    { "id": 2, "key": "financing", "name": "Financing channel",  "weight": 0.30, "question": "Have lenders started saying no?" },
-    { "id": 3, "key": "demand",    "name": "Demand reality",     "weight": 0.25, "question": "Were the customers ever there at the assumed price?" },
-    { "id": 4, "key": "systemic",  "name": "Systemic",           "weight": 0.10, "question": "Is stress spreading into defaults and frozen capital?" }
+    {
+      "id": 0,
+      "key": "ambient",
+      "name": "Ambient conditions",
+      "weight": 0.15,
+      "question": "Is spending running ahead of the revenue meant to justify it?"
+    },
+    {
+      "id": 1,
+      "key": "narrative",
+      "name": "Narrative break",
+      "weight": 0.2,
+      "question": "Has the market stopped rewarding the story?"
+    },
+    {
+      "id": 2,
+      "key": "financing",
+      "name": "Financing channel",
+      "weight": 0.3,
+      "question": "Have lenders started saying no?"
+    },
+    {
+      "id": 3,
+      "key": "demand",
+      "name": "Demand reality",
+      "weight": 0.25,
+      "question": "Were the customers ever there at the assumed price?"
+    },
+    {
+      "id": 4,
+      "key": "systemic",
+      "name": "Systemic",
+      "weight": 0.1,
+      "question": "Is stress spreading into defaults and frozen capital?"
+    }
   ],
   "bands": [
-    { "key": "healthy",            "label": "Healthy",             "min": 0.00, "max": 0.15 },
-    { "key": "late_cycle",         "label": "Late-cycle fragility","min": 0.15, "max": 0.35 },
-    { "key": "narrative_breaking", "label": "Narrative breaking",  "min": 0.35, "max": 0.55 },
-    { "key": "cascade",            "label": "Cascade underway",    "min": 0.55, "max": 1.00 }
+    {
+      "key": "healthy",
+      "label": "Healthy",
+      "min": 0.0,
+      "max": 0.15
+    },
+    {
+      "key": "late_cycle",
+      "label": "Late-cycle fragility",
+      "min": 0.15,
+      "max": 0.35
+    },
+    {
+      "key": "narrative_breaking",
+      "label": "Narrative breaking",
+      "min": 0.35,
+      "max": 0.55
+    },
+    {
+      "key": "cascade",
+      "label": "Cascade underway",
+      "min": 0.55,
+      "max": 1.0
+    }
   ],
   "tripwires": [
     {
-      "id": "3.4",
-      "tier": 3,
-      "name": "Open-weight substitution",
-      "public_name": "Low-cost model substitution",
-      "threshold_text": "Greater than ~40% of measurable enterprise inference running on open-weight or Chinese models",
-      "threshold_machine": { "metric": "open_weight_inference_share", "op": ">", "value": 0.40 },
-      "seller_class": "fundamental",
-      "search_queries": ["open-weight model enterprise inference share adoption"],
-      "notes": "OpenRouter is the primary measurable proxy and under-weights committed enterprise contracts."
+      "id": "0.1",
+      "tier": 0,
+      "name": "Token price index",
+      "public_name": "Cost of AI compute",
+      "threshold_text": "Token price index above -25% year-on-year for more than eight consecutive weeks WITH volume growth decelerating",
+      "threshold_machine": {
+        "metric": "token_price_index_yoy",
+        "op": ">",
+        "value": -0.25
+      },
+      "seller_class": "none",
+      "search_queries": [],
+      "text_source": "derived_from_run"
     },
     {
-      "id": "2.6",
-      "tier": 2,
-      "name": "Data-centre credit basis",
-      "public_name": "Data-centre borrowing premium",
-      "threshold_text": "PROVISIONAL — framework text required. Run 2026-07-27 states the threshold requires the data-centre/tech IG basis in bps versus broad IG.",
-      "threshold_machine": { "metric": "datacentre_ig_basis_bp", "op": ">", "value": null },
-      "seller_class": "fundamental",
-      "search_queries": ["data center IG spread basis versus broad investment grade"],
-      "notes": "Marked UNSCOREABLE in run 2026-07-27; recurring basis series is an open data request.",
-      "provisional": true
+      "id": "0.2",
+      "tier": 0,
+      "name": "Blended inference rate ratio",
+      "public_name": "Price gap between AI models",
+      "threshold_text": "Blended inference rate ratio narrowing (threshold defined on blended, not single-model, rates)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "none",
+      "search_queries": [],
+      "text_source": "derived_from_run"
     },
     {
-      "id": "2.2",
-      "tier": 2,
-      "name": "Refinancing cost escalation",
-      "public_name": "Cost of refinancing",
-      "threshold_text": "PROVISIONAL — framework text required. Run 2026-07-27 contrary-evidence note implies refinancing above +300bps or a failure to refinance.",
-      "threshold_machine": { "metric": "refi_spread_bp", "op": ">", "value": 300 },
-      "seller_class": "fundamental",
-      "search_queries": ["AI data center debt refinancing spread secured notes"],
-      "notes": "Held ARMED in run 2026-07-27 against contrary evidence (Nebius $775M at SOFR+250bps, oversubscribed).",
-      "provisional": true
+      "id": "0.3",
+      "tier": 0,
+      "name": "Capex/revenue divergence",
+      "public_name": "Spending vs revenue gap",
+      "threshold_text": "AI capital spending to revenue divergence exceeding the 32% peak of the 2001 telecom cycle",
+      "threshold_machine": {
+        "metric": "capex_revenue_divergence",
+        "op": ">",
+        "value": 0.32
+      },
+      "seller_class": "none",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "0.4",
+      "tier": 0,
+      "name": "Free-cash-flow migration",
+      "public_name": "Profits shifting to suppliers",
+      "threshold_text": "Free cash flow migrating from hyperscalers to suppliers while aggregate spending rises",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "none",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "0.5",
+      "tier": 0,
+      "name": "Component scarcity vs token deflation",
+      "public_name": "Parts scarce while output cheapens",
+      "threshold_text": "Memory and optics sold out with rising component prices against continued token-price deflation",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "none",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "1.1",
+      "tier": 1,
+      "name": "Capex restraint permission event",
+      "public_name": "Market rewards spending restraint",
+      "threshold_text": "A hyperscaler rewarded by the market for moderating capital spending (permission event)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "speculative",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "1.2",
+      "tier": 1,
+      "name": "Guidance-raise punishment",
+      "public_name": "Market punishes more spending",
+      "threshold_text": "At least two hyperscalers falling 5% or more on a capital-spending raise, across two consecutive quarters",
+      "threshold_machine": {
+        "metric": "hyperscaler_drop_on_capex_raise",
+        "op": ">=",
+        "value": 2
+      },
+      "seller_class": "speculative",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "1.3",
+      "tier": 1,
+      "name": "Listing-window closure",
+      "public_name": "AI listings stalling",
+      "threshold_text": "Primary AI listing window closing \u2014 slipped or withdrawn offerings at the largest private labs",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "speculative",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "1.4",
+      "tier": 1,
+      "name": "Backlog credibility break",
+      "public_name": "Order books questioned",
+      "threshold_text": "Restatement, cancellation above 10% of contracted backlog, or an auditor flag on reported RPO",
+      "threshold_machine": {
+        "metric": "backlog_cancellation_share",
+        "op": ">",
+        "value": 0.1
+      },
+      "seller_class": "speculative",
+      "search_queries": [],
+      "text_source": "derived_from_run"
     },
     {
       "id": "1.5",
       "tier": 1,
       "name": "Media assertion flip",
       "public_name": "Press narrative reversal",
-      "threshold_text": "PROVISIONAL — framework text required.",
-      "threshold_machine": { "metric": "media_assertion_flip", "op": "=", "value": null },
+      "threshold_text": "Mainstream media tone flipping from question to assertion (requires Tier 2 confirmation; discriminator D4)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
       "seller_class": "speculative",
-      "search_queries": ["AI bubble mainstream media narrative reversal"],
-      "notes": "Spec §4.1/§4.2: feeds Recovery Narrative Credibility in the second cascade, advisory only.",
-      "provisional": true
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "2.1",
+      "tier": 2,
+      "name": "Lender withdrawal",
+      "public_name": "Lenders stepping back",
+      "threshold_text": "A named lender failing or withdrawing from AI data-centre financing (permitting delays do not qualify)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "2.2",
+      "tier": 2,
+      "name": "Refinancing cost escalation",
+      "public_name": "Cost of refinancing",
+      "threshold_text": "Refinancing completed above +300bps, or a failure to refinance",
+      "threshold_machine": {
+        "metric": "refi_spread_bp",
+        "op": ">",
+        "value": 300
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "2.3",
+      "tier": 2,
+      "name": "Collateral haircuts",
+      "public_name": "Lenders discounting chips",
+      "threshold_text": "GPU loan-to-value cut below 50%, or a directional break in useful-life depreciation schedules",
+      "threshold_machine": {
+        "metric": "gpu_ltv",
+        "op": "<",
+        "value": 0.5
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "2.4",
+      "tier": 2,
+      "name": "Mega-cap equity raise",
+      "public_name": "Big tech raising equity",
+      "threshold_text": "A second mega-cap EQUITY raise (debt issuance does not satisfy this threshold)",
+      "threshold_machine": {
+        "metric": "megacap_equity_raises",
+        "op": ">=",
+        "value": 2
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "2.5",
+      "tier": 2,
+      "name": "High-yield spread",
+      "public_name": "Junk-bond stress",
+      "threshold_text": "ICE BofA US High Yield OAS above 400bps (discriminator D3: requires higher-quality participation)",
+      "threshold_machine": {
+        "metric": "hy_oas_bp",
+        "op": ">",
+        "value": 400
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "2.6",
+      "tier": 2,
+      "name": "Data-centre credit basis",
+      "public_name": "Data-centre borrowing premium",
+      "threshold_text": "Tech and data-centre IG option-adjusted spread basis above +75bps versus broad IG",
+      "threshold_machine": {
+        "metric": "datacentre_ig_basis_bp",
+        "op": ">",
+        "value": 75
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "2.7",
+      "tier": 2,
+      "name": "Vendor-financing scrutiny",
+      "public_name": "Circular financing under scrutiny",
+      "threshold_text": "SEC attention to vendor financing, or vendor-finance share of data-centre revenue crossing its bar (press scrutiny alone does not qualify)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "2.8",
+      "tier": 2,
+      "name": "Capex above operating cash flow",
+      "public_name": "Spending exceeds cash generated",
+      "threshold_text": "Plural hyperscalers with trailing-twelve-month capital spending above operating cash flow",
+      "threshold_machine": {
+        "metric": "hyperscalers_capex_above_ocf",
+        "op": ">=",
+        "value": 2
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "3.1",
+      "tier": 3,
+      "name": "Revenue pool contraction",
+      "public_name": "Shrinking AI revenue pool",
+      "threshold_text": "AI revenue pool contracting for two consecutive quarters (discriminator D1: falling prices with rising volume is a price war, not demand destruction)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "3.2",
+      "tier": 3,
+      "name": "Cloud revenue disclosure",
+      "public_name": "Cloud growth disappoints",
+      "threshold_text": "Hyperscaler cloud revenue disclosed materially below street (numeric definition pending framework v2 \u2014 RF-2026-07-27-003)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "3.3",
+      "tier": 3,
+      "name": "Enterprise spend withdrawal",
+      "public_name": "Customers cancelling",
+      "threshold_text": "More than 30% of planned enterprise AI spend cancelled or non-renewed (postponement does not qualify)",
+      "threshold_machine": {
+        "metric": "enterprise_spend_cancelled_share",
+        "op": ">",
+        "value": 0.3
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "3.4",
+      "tier": 3,
+      "name": "Open-weight substitution",
+      "public_name": "Low-cost model substitution",
+      "threshold_text": "Greater than ~40% of measurable enterprise inference running on open-weight or Chinese models",
+      "threshold_machine": {
+        "metric": "open_weight_inference_share",
+        "op": ">",
+        "value": 0.4
+      },
+      "seller_class": "fundamental",
+      "search_queries": [
+        "open-weight model enterprise inference share adoption"
+      ],
+      "text_source": "framework"
+    },
+    {
+      "id": "3.5",
+      "tier": 3,
+      "name": "Sovereignty restriction",
+      "public_name": "Governments restricting AI",
+      "threshold_text": "Three or more governments imposing sovereignty restrictions binding on procurement (a supranational bloc counts as one)",
+      "threshold_machine": {
+        "metric": "governments_restricting",
+        "op": ">=",
+        "value": 3
+      },
+      "seller_class": "fundamental",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "4.1",
+      "tier": 4,
+      "name": "Compute payment failure",
+      "public_name": "Missed compute payments",
+      "threshold_text": "A missed or renegotiated compute payment on a major contract (a ratings action does not qualify)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "buy_and_hold",
+      "search_queries": [],
+      "text_source": "derived_from_run"
     },
     {
       "id": "4.2",
       "tier": 4,
       "name": "Private-credit vehicle gating",
       "public_name": "Frozen private-credit funds",
-      "threshold_text": "PROVISIONAL — framework text required.",
-      "threshold_machine": { "metric": "gated_private_credit_vehicles", "op": ">=", "value": null },
+      "threshold_text": "AI-exposed private-credit vehicles imposing withdrawal gates (scope: data-centre and compute credit; clock resets at baseline \u2014 RF-2026-07-27-001)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
       "seller_class": "buy_and_hold",
-      "search_queries": ["private credit fund gates withdrawal limits AI exposure"],
-      "notes": "Open reconciliation flag: three perpetual vehicles capped withdrawals Mar-Apr 2026, possibly pre-baseline. Needs human adjudication (Spec §12.4).",
-      "provisional": true
+      "search_queries": [],
+      "text_source": "derived_from_run"
     },
     {
       "id": "4.3",
       "tier": 4,
-      "name": "Default cascade",
-      "public_name": "Defaults spreading",
-      "threshold_text": "PROVISIONAL — framework text required.",
-      "threshold_machine": { "metric": "ai_exposed_defaults", "op": ">=", "value": null },
+      "name": "GPU securitisation default",
+      "public_name": "Chip-backed debt defaults",
+      "threshold_text": "A GPU securitisation default or covenant breach",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
       "seller_class": "buy_and_hold",
-      "search_queries": ["AI infrastructure debt default restructuring"],
-      "notes": "Spec §4.2: with 4.2, the only inputs to the advisory Credit/Default Cascade factor.",
-      "provisional": true
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "4.4",
+      "tier": 4,
+      "name": "Supply-chain order cancellations",
+      "public_name": "Orders being cancelled",
+      "threshold_text": "Memory, optics or component order cancellations (currently strongly inverted: sold out through 2026)",
+      "threshold_machine": {
+        "metric": "qualitative",
+        "op": "n/a",
+        "value": null
+      },
+      "seller_class": "buy_and_hold",
+      "search_queries": [],
+      "text_source": "derived_from_run"
+    },
+    {
+      "id": "4.5",
+      "tier": 4,
+      "name": "Systemic risk-off",
+      "public_name": "Broad market stress",
+      "threshold_text": "VIX above 40 with IG spreads above +300bps and a retirement-allocation shift, in a sustained sell-the-rally regime",
+      "threshold_machine": {
+        "metric": "vix",
+        "op": ">",
+        "value": 40
+      },
+      "seller_class": "buy_and_hold",
+      "search_queries": [],
+      "text_source": "derived_from_run"
     }
-  ]
+  ],
+  "_hash_note": "Canonical-JSON sha256 of the tripwires array as computed by scripts/validate-ai-bubble.mjs (the enforcing implementation). Non-ASCII is emitted literally, not \\u-escaped \u2014 a Python generator using ensure_ascii=True will differ."
 }

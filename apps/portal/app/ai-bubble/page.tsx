@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import { DashNav } from '@/components/DashNav';
 import { StatusMark } from '@/components/aiBubble/StatusMark';
-import { listRunDates, loadRun, loadThresholds, publicationBlockers } from '@/lib/aiBubble/load';
+import {
+  listRunDates,
+  loadRun,
+  loadThresholds,
+  publicationBlockers,
+  unreconciledThresholdCount,
+} from '@/lib/aiBubble/load';
 import { bandFor, stripInternal } from '@/lib/aiBubble/scoring';
 import { AI_BUBBLE_DISCLOSURE, type RunFile, type ThresholdFile } from '@/lib/aiBubble/types';
 
@@ -47,6 +53,7 @@ export default function AiBubblePage() {
   const run = loadRun();
   const blockers = publicationBlockers(thresholds);
   const runDates = listRunDates();
+  const unreconciled = unreconciledThresholdCount(thresholds);
 
   return (
     <>
@@ -58,7 +65,7 @@ export default function AiBubblePage() {
           </p>
           <h1 className="mt-1 text-3xl">AI Bubble Trigger Index</h1>
           <p className="text-sm text-navy/60">
-            Twenty-seven pre-committed tripwires across five tiers, scored weekly against unchanged
+            Twenty-eight pre-committed tripwires across five tiers, scored weekly against unchanged
             thresholds. Evidence feeding the correction model — not a second opinion beside it.
           </p>
         </header>
@@ -100,6 +107,24 @@ export default function AiBubblePage() {
               rendering · §6 briefing trigger.
             </div>
           </section>
+        )}
+
+        {run?.baseline_provenance?.type === 'reconstructed' && (
+          <p className="mt-4 rounded-lg border border-navy/20 bg-navy/[0.03] p-3 text-xs leading-relaxed text-navy/65">
+            <span className="font-semibold">Baseline provenance:</span>{' '}
+            {run.baseline_provenance.note}
+          </p>
+        )}
+
+        {unreconciled > 0 && (
+          <p className="mt-3 rounded-lg border border-gold/50 bg-gold/10 p-3 text-xs leading-relaxed text-navy/70">
+            <span className="font-semibold">Threshold text pending reconciliation.</span> The tier,
+            seller class, and every score below are authoritative, and the Index reproduces exactly
+            from the tripwire statuses. The wording of {unreconciled} threshold descriptions was
+            transcribed from this run&rsquo;s own rationales rather than read from the framework
+            document; any correction will be published as an amendment. Scoring never reads
+            threshold wording, so the Index is unaffected.
+          </p>
         )}
 
         {run && thresholds && <RunView run={run} thresholds={thresholds} />}
@@ -235,6 +260,9 @@ function RunView({ run, thresholds }: { run: RunFile; thresholds: ThresholdFile 
                   <StatusMark status={c.to} />
                 </div>
                 {c.cascade_note && <p className="mt-1 text-sm text-navy/70">{c.cascade_note}</p>}
+                {c.mechanism && (
+                  <p className="mt-1 text-xs italic text-navy/55">Mechanism: {c.mechanism}</p>
+                )}
               </div>
             ))}
           </div>
@@ -305,6 +333,33 @@ function RunView({ run, thresholds }: { run: RunFile; thresholds: ThresholdFile 
                       </a>
                     </p>
                   ))}
+                  {(t.contrary_evidence ?? []).map((e) => (
+                    <p key={e.source_url} className="mt-1 text-navy/60">
+                      <span className="font-semibold">Contrary:</span> {e.statement}{' '}
+                      <a href={e.source_url} className="text-gold underline" target="_blank" rel="noreferrer">
+                        {e.source_name} · {e.source_date}
+                      </a>
+                    </p>
+                  ))}
+                  {(t.context ?? []).map((e) => (
+                    <p key={e.source_url} className="mt-1 text-navy/50">
+                      <span className="font-semibold">Excluded from the decision:</span>{' '}
+                      {e.statement} {e.excluded_reason}{' '}
+                      <a href={e.source_url} className="text-gold underline" target="_blank" rel="noreferrer">
+                        {e.source_name} · {e.source_date}
+                      </a>
+                    </p>
+                  ))}
+                  {t.calibration_flag && (
+                    <p className="mt-1 text-[#8a6d1f]">
+                      <span className="font-semibold">Calibration flag:</span> {t.calibration_flag}
+                    </p>
+                  )}
+                  {(t.discriminators_applied ?? []).length > 0 && (
+                    <p className="mt-1 text-navy/50">
+                      Discriminators applied: {(t.discriminators_applied ?? []).join(', ')}
+                    </p>
+                  )}
                 </div>
               </details>
             );
@@ -336,6 +391,19 @@ function RunView({ run, thresholds }: { run: RunFile; thresholds: ThresholdFile 
                   <span className="font-semibold">{defs.get(f.tripwire_id)?.public_name ?? f.tripwire_id}</span>
                   <p className="mt-1 text-navy/75">{f.text}</p>
                   {f.requires && <p className="mt-1 text-xs text-navy/55">Requires: {f.requires}</p>}
+                  {f.provisional_ruling && (
+                    <p className="mt-1 text-xs text-navy/70">
+                      <span className="font-semibold">Ruling in force:</span> {f.provisional_ruling}
+                    </p>
+                  )}
+                  {f.impact_if_overturned && (
+                    <p className="mt-1 text-xs text-navy/55">
+                      <span className="font-semibold">If overturned:</span> {f.impact_if_overturned}
+                    </p>
+                  )}
+                  {f.blocking && (
+                    <p className="mt-1 text-xs font-semibold text-[#8a6d1f]">{f.blocking}</p>
+                  )}
                 </div>
               ))}
           </div>

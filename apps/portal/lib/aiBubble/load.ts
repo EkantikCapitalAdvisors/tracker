@@ -1,6 +1,7 @@
 import 'server-only';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { stripRunForMembers } from './scoring';
 import type { RunFile, ThresholdFile } from './types';
 
 /**
@@ -43,7 +44,10 @@ export function loadRun(date?: string): RunFile | null {
   if (!target) return null;
   const path = join(dir, 'runs', `run-${target}.json`);
   if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, 'utf8')) as RunFile;
+  const raw = JSON.parse(readFileSync(path, 'utf8')) as RunFile;
+  // §8 — internal blocks are stripped here, at build time, so they never
+  // reach a member payload. Never hidden with CSS.
+  return stripRunForMembers(raw as unknown as Record<string, unknown>) as unknown as RunFile;
 }
 
 /** Amendment log — §8 states this is member-visible; §12.2 asks for confirmation. */
@@ -63,4 +67,11 @@ export function publicationBlockers(t: ThresholdFile | null): string[] {
   const prov = t.tripwires.filter((x) => x.provisional);
   if (prov.length > 0) out.push(`${prov.length} provisional threshold(s): ${prov.map((p) => p.id).join(', ')}`);
   return out;
+}
+
+/** Threshold texts transcribed from run rationales, pending framework reconciliation. */
+export function unreconciledThresholdCount(t: ThresholdFile | null): number {
+  return (t?.tripwires ?? []).filter(
+    (x) => (x as { text_source?: string }).text_source === 'derived_from_run',
+  ).length;
 }

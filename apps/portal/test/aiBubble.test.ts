@@ -192,3 +192,78 @@ describe('§8 internal visibility is stripped, not hidden', () => {
     expect(stripInternal(items).map((i) => i.t)).toEqual([1, 3]);
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* Live run — 2026-07-27. Guards the shipped artifact, not a fixture.  */
+/* ------------------------------------------------------------------ */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { stripRunForMembers } from '../lib/aiBubble/scoring';
+import type { RunFile, ThresholdFile } from '../lib/aiBubble/types';
+
+const DATA = join(__dirname, '..', '..', '..', 'data', 'ai-bubble');
+const REAL_THRESHOLDS = JSON.parse(
+  readFileSync(join(DATA, 'thresholds.v1.json'), 'utf8'),
+) as ThresholdFile;
+const REAL_RUN = JSON.parse(
+  readFileSync(join(DATA, 'runs', 'run-2026-07-27.json'), 'utf8'),
+) as RunFile;
+
+describe('live run 2026-07-27', () => {
+  it('has all 28 tripwires, matching the threshold file exactly', () => {
+    expect(REAL_THRESHOLDS.tripwires).toHaveLength(28);
+    expect(REAL_RUN.tripwires).toHaveLength(28);
+    expect(REAL_RUN.tripwires.map((t) => t.id).sort()).toEqual(
+      REAL_THRESHOLDS.tripwires.map((t) => t.id).sort(),
+    );
+  });
+
+  it('the published score reproduces from the tripwire statuses', () => {
+    const r = computeScore(REAL_THRESHOLDS, REAL_RUN.tripwires);
+    expect(r.scoreRaw).toBeCloseTo(REAL_RUN.index.score_raw, 10);
+    expect(r.scoreRaw).toBeCloseTo(0.1975, 10);
+    expect(r.scoreDisplay).toBe(REAL_RUN.index.score_display);
+    expect(r.tiers.map((t) => t.load)).toEqual(REAL_RUN.tiers.map((t) => t.load));
+  });
+
+  it('coverage is 27 of 28 with 2.6 unscoreable', () => {
+    const r = computeScore(REAL_THRESHOLDS, REAL_RUN.tripwires);
+    expect(r.coverage).toEqual({ scored: 27, total: 28, unscoreableIds: ['2.6'] });
+  });
+
+  it('the published cascade factors reproduce from the tier loads', () => {
+    const r = computeScore(REAL_THRESHOLDS, REAL_RUN.tripwires);
+    const c = computeCascadeContribution(r.tiers);
+    const pub = REAL_RUN.cascade_contribution;
+    expect(c.spec_to_fundamental.earnings_estimate_momentum!.proposed).toBe(
+      pub.spec_to_fundamental.earnings_estimate_momentum!.proposed,
+    );
+    expect(c.spec_to_fundamental.valuation_vulnerability!.proposed).toBe(
+      pub.spec_to_fundamental.valuation_vulnerability!.proposed,
+    );
+    // tier_load 0.125 → 4×load is exactly 0.5: half-up must give 2, not 1.
+    expect(c.spec_to_fundamental.credit_condition_deterioration!.proposed).toBe(2);
+    expect(c.fundamental_to_buy_and_hold.systemic_risk_perception!.proposed).toBe(1);
+  });
+
+  it('fires the briefing — one upgrade plus a high-severity flag', () => {
+    expect(briefingShouldFire(REAL_RUN)).toBe(true);
+    expect(REAL_RUN.publication.briefing_should_fire).toBe(true);
+  });
+
+  it('strips the internal governance block from the member payload', () => {
+    expect(REAL_RUN.epig_governance).toBeDefined(); // present in the canonical source
+    const shipped = stripRunForMembers(REAL_RUN as unknown as Record<string, unknown>);
+    expect(shipped.epig_governance).toBeUndefined();
+    expect(JSON.stringify(shipped)).not.toContain('"visibility":"internal"');
+  });
+
+  it('every changed tripwire cites a source dated inside the window', () => {
+    for (const t of REAL_RUN.tripwires.filter((x) => x.changed)) {
+      expect(t.evidence?.length).toBeGreaterThan(0);
+      for (const e of t.evidence ?? []) {
+        expect(e.source_date > (REAL_RUN.source_window_start ?? '')).toBe(true);
+      }
+    }
+  });
+});

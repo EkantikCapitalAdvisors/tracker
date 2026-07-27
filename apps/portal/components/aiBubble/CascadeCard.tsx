@@ -75,7 +75,14 @@ export function CascadeCard() {
                       <span className="text-[#8a6d1f]">{cc.override!.applied} / 5</span>
                     </>
                   ) : (
-                    <>{f.proposed} / 5</>
+                    <>
+                      {f.proposed} / 5
+                      {typeof f.prior_proposed === 'number' && f.prior_proposed !== f.proposed && (
+                        <span className="ml-1 text-xs text-[#8a6d1f]">
+                          ({f.proposed > f.prior_proposed ? '▲' : '▼'} from {f.prior_proposed})
+                        </span>
+                      )}
+                    </>
                   )}
                 </td>
               </tr>

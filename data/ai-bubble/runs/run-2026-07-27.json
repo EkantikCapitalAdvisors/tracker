@@ -1,0 +1,270 @@
+{
+  "schema_version": "1.0",
+  "framework_version": "1.0",
+  "thresholds_hash": "sha256:17310df9557b71af9af0c438dd08d6921f79136892370f58172da78fa8bae550",
+  "run_date": "2026-07-27",
+  "prior_run_date": "2026-07-09",
+  "source_window_start": "2026-07-09",
+  "baseline_provenance": {
+    "type": "reconstructed",
+    "note": "The 2026-07-09 run file was not recoverable from session storage. Baseline statuses were taken from the v1.0 framework document and the 2026-07-09 run notes. The 0.17 anchor reproduces exactly at 0.1725 under the scoring formula, confirming baseline integrity.",
+    "prior_run_file_exists": false
+  },
+
+  "index": {
+    "score_raw": 0.1975,
+    "score_display": "0.20",
+    "prior_score_raw": 0.1725,
+    "delta": 0.025,
+    "band": "late_cycle",
+    "band_changed": false,
+    "coverage": { "scored": 27, "total": 28, "unscoreable_ids": ["2.6"] }
+  },
+
+  "tiers": [
+    { "id": 0, "load": 0.600, "contribution": 0.0900, "prior_load": 0.600, "delta": 0.000 },
+    { "id": 1, "load": 0.100, "contribution": 0.0200, "prior_load": 0.100, "delta": 0.000 },
+    { "id": 2, "load": 0.125, "contribution": 0.0375, "prior_load": 0.125, "delta": 0.000 },
+    { "id": 3, "load": 0.200, "contribution": 0.0500, "prior_load": 0.100, "delta": 0.100 },
+    { "id": 4, "load": 0.000, "contribution": 0.0000, "prior_load": 0.000, "delta": 0.000 }
+  ],
+
+  "tripwires": [
+    { "id": "0.1", "status": "ARMED", "prior_status": "ARMED", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Last named reading is approximately -20% from the May high (Bloomberg, 2026-07-03, pre-window). No post-window print located. Threshold requires >-25% for over eight weeks WITH volume decelerating; the volume leg remains unevidenced.",
+      "discriminators_applied": ["D1"], "evidence": [], "visibility": "member" },
+
+    { "id": "0.2", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "No blended ratio reading obtainable in-window. Extreme single-model pairs imply widening, not narrowing, but the threshold is defined on blended rates.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "0.3", "status": "FIRED", "prior_status": "FIRED", "status_score": 1.0, "changed": false, "direction": "none",
+      "rationale": "Corroborated in-window. Divergence running at approximately 46% against 32% in the 2001 telecom cycle, still widening.",
+      "discriminators_applied": [],
+      "evidence": [{ "statement": "AI capex/revenue divergence at roughly 46%, exceeding the 32% divergence of the 2001 telecom excess cycle.", "observed_value": "0.46", "source_name": "Allianz Research", "source_url": "https://www.allianz.com/content/dam/onemarketing/azcom/Allianz_com/economic-research/publications/specials/en/2026/march/2026_03_25_AI.pdf", "source_date": "2026-07-17" }],
+      "visibility": "member" },
+
+    { "id": "0.4", "status": "FIRED", "prior_status": "FIRED", "status_score": 1.0, "changed": false, "direction": "none",
+      "rationale": "Holds. Free cash flow continues migrating from hyperscalers to suppliers while spending rises.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "0.5", "status": "FIRED", "prior_status": "FIRED", "status_score": 1.0, "changed": false, "direction": "none",
+      "rationale": "Holds. Memory and optics sold out with rising prices against continued token deflation.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "1.1", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Inverted this week. Alphabet RAISED capex guidance and fell 7.4%. The market punished spending rather than rewarding restraint — the opposite of a permission event.",
+      "discriminators_applied": ["D2"], "evidence": [], "visibility": "member" },
+
+    { "id": "1.2", "status": "PARTIAL", "prior_status": "PARTIAL", "status_score": 0.5, "changed": false, "direction": "none",
+      "rationale": "Alphabet Q2 clears the -5% bar on a capex raise despite a beat (revenue +24%, Cloud +82%, guidance $180-190B to $195-205B, stock -7.4%). One hyperscaler. Threshold requires at least two across two consecutive quarters. Microsoft and Meta report 2026-07-29, Amazon 2026-07-30 — after this run. Same-session sympathy moves (AMZN -4%, ORCL -4%, META -3%, MSFT -2%) excluded: not their own guidance events.",
+      "discriminators_applied": [],
+      "evidence": [{ "statement": "Alphabet fell 7.38% to $316.68 from $341.91 after raising 2026 capex guidance to $195-205B, despite Q2 revenue +24% and Cloud +82%.", "observed_value": "-0.0738", "source_name": "The Motley Fool", "source_url": "https://www.fool.com/coverage/stock-market-today/2026/07/23/stock-market-today-july-23-alphabet-slides-7-after-announcing-2026-capex-of-roughly-usd200-billion/", "source_date": "2026-07-23" }],
+      "visibility": "member" },
+
+    { "id": "1.3", "status": "ARMED", "prior_status": "ARMED", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Reconciliation resolved. The OpenAI listing slip to 2027 is confirmed by an in-window dated source, supporting the original baseline rationale.",
+      "discriminators_applied": [],
+      "evidence": [{ "statement": "OpenAI has reportedly moved its IPO into 2027.", "observed_value": "2027", "source_name": "Intellectia", "source_url": "https://intellectia.ai/blog/mega-cap-ai-ipo-wave-2026-july-13", "source_date": "2026-07-13" }],
+      "contrary_evidence": [{ "statement": "Anthropic raised a $65B Series H at $965B post-money — an up round, not a down round. S-1 filed 2026-06-01; IPO investor meetings targeted for October.", "source_name": "CNBC", "source_url": "https://www.cnbc.com/2026/05/28/anthropic-open-ai-startup-value.html", "source_date": "2026-07-13" }],
+      "visibility": "member" },
+
+    { "id": "1.4", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Oracle RPO of $638B intact. No restatement, no cancellation above 10%, no auditor flag. The S&P downgrade of 2026-07-09 is a ratings action, not a backlog credibility event, and falls on the window boundary.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "1.5", "status": "ARMED", "prior_status": "ARMED", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Tone continued shifting toward assertion across mainstream outlets. Discriminator D4 binds: media volume alone cannot escalate, and no Tier 2 fire exists to confirm it.",
+      "discriminators_applied": ["D4"], "evidence": [], "visibility": "member" },
+
+    { "id": "2.1", "status": "PARTIAL", "prior_status": "PARTIAL", "status_score": 0.5, "changed": false, "direction": "none",
+      "rationale": "No new named lender failure in-window. The $130B of AI data centres blocked or delayed in 2026 is attributed to local consent and permitting, not lender failure — the wrong causal channel, and it does not advance this tripwire.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "2.2", "status": "ARMED", "prior_status": "ARMED", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Contrary evidence in-window. Nebius closed $775M senior secured, GPU-collateralised, 2030 maturity at SOFR+250bps, oversubscribed — reversing a 14% single-day decline on financing concerns. No refinancing above +300bps and no failure to refinance.",
+      "discriminators_applied": [],
+      "contrary_evidence": [{ "statement": "Nebius raised $775M in first secured debt financing at SOFR+250bps, oversubscribed, maturing 2030.", "observed_value": "250", "source_name": "Nebius", "source_url": "https://nebius.com/newsroom/nebius-raises-775-million-in-first-secured-debt-financing-to-accelerate-global-buildout", "source_date": "2026-07-17" }],
+      "visibility": "member" },
+
+    { "id": "2.3", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Industry split, no directional break. Amazon shortened useful life on a subset of servers citing AI innovation pace; Meta extended. No GPU LTV cut below 50% named in-window.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "2.4", "status": "PARTIAL", "prior_status": "PARTIAL", "status_score": 0.5, "changed": false, "direction": "none",
+      "rationale": "No second mega-cap EQUITY raise. Oracle raised $43B debt plus $5B equity in FY2026 with $40B more planned for FY2027; Amazon, Alphabet and Meta all tapped bond markets. Debt issuance does not satisfy this threshold.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "2.5", "status": "ARMED", "prior_status": "ARMED", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Far from threshold. HY OAS at 277bps against a 400bps trigger, sitting at the 16th percentile over ten years. IG approximately 80bps, BBB approximately 100bps. Discriminator D3 unmet.",
+      "discriminators_applied": ["D3"],
+      "evidence": [{ "statement": "ICE BofA US High Yield Index OAS at 2.77%, 16th percentile over ten years.", "observed_value": "277", "source_name": "FRED / Convex", "source_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2", "source_date": "2026-07-23" }],
+      "calibration_flag": "Structurally distant from threshold while its paired tripwire 2.6 is unmeasurable. Candidate for de-escalation to DORMANT at manual review.",
+      "visibility": "member" },
+
+    { "id": "2.6", "status": "UNSCOREABLE", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Threshold requires the tech and data-centre IG basis in bps against broad IG. Directional evidence is present — approximately 80% of data-centre securities issued since early 2025 now quote wider than at issuance, and AI debt heading toward $570B is meeting investor pushback — but the specific basis figure was not obtainable from any source this run. Marked unscoreable rather than estimated.",
+      "unscoreable_reason": "Required metric (tech/DC IG basis vs broad IG, in bps) not obtainable from any in-window source.",
+      "data_request": "Recurring data-centre and tech IG option-adjusted spread basis series versus broad IG. Highest-priority data gap in the framework.",
+      "discriminators_applied": ["D3"],
+      "evidence": [{ "statement": "Nearly 80% of data-centre securities sold since early last year are quoted at a wider spread than at issuance.", "observed_value": "0.80", "source_name": "Bloomberg Law — Distress Watch", "source_url": "https://news.bloomberglaw.com/bankruptcy-law/distress-watch-data-center-debt-hits-a-wall-after-deal-rush", "source_date": "2026-07-17" }],
+      "visibility": "member" },
+
+    { "id": "2.7", "status": "ARMED", "prior_status": "ARMED", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Scrutiny rising but the pre-committed metric is unevidenced. The $250B OpenAI guarantee remains under discussion and unagreed as of 2026-07-27. Nvidia remains contractually obligated to absorb CoreWeave unsold capacity through 2032. Press scrutiny is not SEC attention, and vendor-finance share of DC revenue is not established.",
+      "discriminators_applied": [],
+      "evidence": [{ "statement": "Nvidia circular financing under scrutiny; $24.9B CoreWeave debt exposure.", "source_name": "TechTimes", "source_url": "https://www.techtimes.com/articles/320239/20260712/nvidia-circular-financing-249b-coreweave-debt-puts-pension-funds-risk.htm", "source_date": "2026-07-12" }],
+      "visibility": "member" },
+
+    { "id": "2.8", "status": "ARMED", "prior_status": "ARMED", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "One name at most, and on the wrong measure. Epoch AI crossing schedule: Oracle already crossed (outside the big four), Amazon crossing now, Alphabet approximately Q1 2027, Meta approximately Q3 2027, Microsoft approximately Q3 2028. Alphabet posted QUARTERLY FCF of -$5.9B in Q2 2026; the threshold is TTM, and one name is not plural.",
+      "discriminators_applied": [],
+      "evidence": [{ "statement": "Aggregate hyperscaler cash capex on track to overtake operating cash flow around Q3 2026; Oracle crossed, Amazon crossing now.", "source_name": "Epoch AI", "source_url": "https://epoch.ai/data-insights/hyperscaler-capex-vs-cash-flow", "source_date": "2026-07-20" }],
+      "watch": "Sharpest near-term escalation candidate. The 2026-07-29 and 2026-07-30 prints could put a second name over.",
+      "visibility": "member" },
+
+    { "id": "3.1", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Discriminator D1 governs and is not satisfied. The expenditure index is ambiguous as a price-times-volume composite, and sources describe adoption outrunning efficiency gains with total bills rising. No evidence the revenue pool is contracting for two consecutive quarters.",
+      "discriminators_applied": ["D1"], "evidence": [], "visibility": "member" },
+
+    { "id": "3.2", "status": "ARMED", "prior_status": "ARMED", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Contrary evidence in-window. Alphabet Cloud grew 82% year on year, the fastest in at least three years — an acceleration, not a disclosure below street.",
+      "discriminators_applied": [],
+      "calibration_flag": "Threshold needs a numeric definition of 'materially below street' to become machine-evaluable.",
+      "visibility": "member" },
+
+    { "id": "3.3", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Neither leg met. Forrester reports enterprises postponing 25% of planned AI spend to 2027 — below the 30% bar, and postponement is not non-renewal. Counterweight: the RBC CIO survey has AI moving into budgeted opex and 86% of IT decision-makers deploying copilots or agentic systems. CIO intent has not flipped.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "3.4", "status": "PARTIAL", "prior_status": "ARMED", "status_score": 0.5, "changed": true, "direction": "up",
+      "rationale": "Three independent in-window readings clear the 40% line on the only directly measurable enterprise-routing dataset. Held at PARTIAL rather than FIRED because OpenRouter measures developer routing and excludes direct API, cloud-contract, subscription and self-hosted inference, where committed enterprise spend concentrates — a caveat every source states. Threshold satisfied on the measurable universe; the measurable universe is not representative. No discriminator applies.",
+      "discriminators_applied": [],
+      "evidence": [
+        { "statement": "Chinese AI models reached a record 58% of tokens processed by US firms on OpenRouter, briefly touching 63% in the first week of July.", "observed_value": "0.58", "source_name": "Benzinga", "source_url": "https://www.benzinga.com/markets/tech/26/07/60543652/chinese-ai-models-overtake-us-rivals-as-token-share-among-american-firms-hits-record-58", "source_date": "2026-07-15" },
+        { "statement": "Chinese AI models capture approximately 60% of US business token usage on OpenRouter.", "observed_value": "0.60", "source_name": "eWeek", "source_url": "https://www.eweek.com/news/chinese-ai-models-us-openrouter-traffic-apac/", "source_date": "2026-07-24" },
+        { "statement": "DeepSeek is OpenRouter's single largest vendor at 17.6% of routed tokens weekly; Qwen next at 13.9%. Open Chinese models price 60-90% below leading US offerings.", "source_name": "eWeek", "source_url": "https://www.eweek.com/news/chinese-ai-models-us-openrouter-traffic-apac/", "source_date": "2026-07-24" }
+      ],
+      "context": [
+        { "statement": "Chinese AI models now capture up to 46% of US enterprise token usage.", "observed_value": "0.46", "source_name": "Yahoo Finance", "source_url": "https://finance.yahoo.com/technology/ai/articles/chinese-ai-models-now-capture-020440715.html", "source_date": "2026-07-07",
+          "excluded_reason": "Pre-window (before 2026-07-09). Retained as corroborating context; the upgrade does NOT rest on it. The two in-window readings alone clear the threshold." }
+      ],
+      "visibility": "member" },
+
+    { "id": "3.5", "status": "PARTIAL", "prior_status": "PARTIAL", "status_score": 0.5, "changed": false, "direction": "none",
+      "rationale": "The EU Cloud and AI Development Act (2026-06-03) establishes sovereignty assessment binding on public-sector procurement, and EU AI Act high-risk obligations take effect 2026-08-02. But a supranational bloc action counts as one government, not three, and the June date predates the source window.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "4.1", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "No missed or renegotiated compute payment. The Oracle-OpenAI $300B contract begins 2027 with approximately $75B prepaid or GPU-covered. The S&P downgrade citing OpenAI concentration is a ratings action, not a payment failure.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "4.2", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Held DORMANT under the provisional scope ruling. Three perpetual private-credit vehicles capped withdrawals March-April 2026 and Blue Owl halted quarterly redemptions on a retail vehicle — but those events predate the baseline, and sources characterise them as driven by AI-SOFTWARE loan books rather than data-centre or compute credit. The guardrail requires a source newer than the prior run for any status change.",
+      "discriminators_applied": [],
+      "reconciliation_flag_id": "RF-2026-07-27-001",
+      "visibility": "member" },
+
+    { "id": "4.3", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "No GPU securitisation default or covenant breach reported in-window.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" },
+
+    { "id": "4.4", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "Strongly inverted. HBM and DRAM sold out through 2026 under multi-year supply agreements; SK Hynix warns the shortage may run past 2030; data centres are absorbing 70% of global memory output through 2027. No cancellations of any kind.",
+      "discriminators_applied": [],
+      "evidence": [{ "statement": "SK Hynix and Micron report entire 2026 HBM production sold out; data centres to absorb 70% of global memory output through 2027.", "source_name": "Everstream Analytics / tech-insider", "source_url": "https://www.everstream.ai/risk-centers/global-memory-chip-shortage-worsens/", "source_date": "2026-07-06" }],
+      "visibility": "member" },
+
+    { "id": "4.5", "status": "DORMANT", "prior_status": "DORMANT", "status_score": 0.0, "changed": false, "direction": "none",
+      "rationale": "No leg met. VIX well below 40, IG at approximately 80bps against a +300bps trigger, no retirement allocation shift reported, no sustained sell-the-rally regime.",
+      "discriminators_applied": [], "evidence": [], "visibility": "member" }
+  ],
+
+  "status_changes": [
+    { "id": "3.4", "from": "ARMED", "to": "PARTIAL", "direction": "up",
+      "seller_class_activated": "fundamental",
+      "cascade_note": "Raises Tier 3 load from 0.100 to 0.200, lifting the Earnings Estimate Momentum contribution in the speculative-to-fundamental cascade from 1 to 2.",
+      "mechanism": "Open-weight substitution pressures frontier-lab pricing power, which flows through to the inference revenue pool underwriting hyperscaler capital spending." }
+  ],
+
+  "held_with_contrary_evidence": [
+    { "id": "2.2", "status": "ARMED", "note": "Nebius closed $775M senior secured at SOFR+250bps, oversubscribed. No refinancing above +300bps, no failure to refinance.", "source_url": "https://nebius.com/newsroom/nebius-raises-775-million-in-first-secured-debt-financing-to-accelerate-global-buildout", "source_date": "2026-07-17" },
+    { "id": "1.3", "status": "ARMED", "note": "Anthropic raised at $965B post-money — an up round. The mega-raise channel is functioning, not failing.", "source_url": "https://www.cnbc.com/2026/05/28/anthropic-open-ai-startup-value.html", "source_date": "2026-07-13" },
+    { "id": "2.5", "status": "ARMED", "note": "HY OAS at 277bps, 16th percentile over ten years — far below the 400bps trigger.", "source_url": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2", "source_date": "2026-07-23" },
+    { "id": "3.2", "status": "ARMED", "note": "Alphabet Cloud grew 82%, fastest in at least three years.", "source_url": "https://www.cnbc.com/2026/07/22/google-earnings-q2-goog-live-updates.html", "source_date": "2026-07-22" },
+    { "id": "4.4", "status": "DORMANT", "note": "Memory sold out through 2026; shortage may run past 2030. Order-book physicals are the inverse of the trigger.", "source_url": "https://www.everstream.ai/risk-centers/global-memory-chip-shortage-worsens/", "source_date": "2026-07-06" }
+  ],
+
+  "watch_items": [
+    { "rank": 1, "tripwire_id": "2.6", "text": "Highest-value data gap. Approximately 80% of data-centre securities quote wider than at issuance, but no tech/DC IG basis in bps was obtainable. Threshold is +75bps. Requires a recurring series before this tripwire can be scored.", "visibility": "member" },
+    { "rank": 2, "tripwire_id": "2.8", "text": "Epoch AI has Amazon crossing capex-above-operating-cash-flow now. The 2026-07-29 and 07-30 prints are the decisive input.", "visibility": "member" },
+    { "rank": 3, "tripwire_id": "3.3", "text": "Forrester has 25% of planned AI spend postponed to 2027 — five points under the bar on an adjacent metric. Watch whether postponement converts to non-renewal at the first renewal cohort.", "visibility": "member" },
+    { "rank": 4, "tripwire_id": "0.1", "text": "No post-window token index print located. The volume leg remains unevidenced in either direction.", "visibility": "member" },
+    { "rank": 5, "tripwire_id": "1.5", "text": "Mainstream tone continued shifting toward assertion. Cannot confirm without a Tier 2 fire.", "visibility": "member" }
+  ],
+
+  "reconciliation_flags": [
+    { "id": "RF-2026-07-27-001", "tripwire_id": "4.2", "severity": "high", "status": "open", "opened_on": "2026-07-27",
+      "text": "The private-credit gate cascade threshold may have been met before the baseline was set. Three perpetual private-credit vehicles imposed withdrawal caps March-April 2026 — the most concentrated gating since 2020 — alongside a Blue Owl retail-vehicle redemption halt and more than $20.8B of Q1 redemption requests against roughly half met.",
+      "requires": "Principal ruling on two questions: (a) does 'AI-exposed' include AI-software loan books, which is how these gates are characterised, or only data-centre and compute credit; (b) does the clock reset at the baseline, or do pre-baseline events count.",
+      "provisional_ruling": "Scope limited to data-centre and compute credit; clock reset at baseline. Tripwire holds DORMANT.",
+      "impact_if_overturned": "Tripwire 4.2 retro-scores to FIRED. Tier 4 load moves from 0.000 to 0.200. Every historical score rises by 0.02. The run score becomes 0.2175 and the baseline 0.1925.",
+      "blocking": "Must be adjudicated before history publishes.",
+      "visibility": "member" },
+    { "id": "RF-2026-07-27-002", "tripwire_id": "2.5", "severity": "medium", "status": "open", "opened_on": "2026-07-27",
+      "text": "Possible miscalibration. At 277bps and the 16th percentile, this tripwire is structurally distant from its threshold while its paired tripwire 2.6 is unmeasurable.",
+      "requires": "Consider de-escalating 2.5 to DORMANT and shifting monitoring weight to 2.6.",
+      "visibility": "member" },
+    { "id": "RF-2026-07-27-003", "tripwire_id": "3.2", "severity": "low", "status": "open", "opened_on": "2026-07-27",
+      "text": "Threshold text 'materially below street' has no numeric definition and is not machine-evaluable.",
+      "requires": "Specify a numeric miss percentage in framework v2.",
+      "visibility": "member" }
+  ],
+
+  "catalysts": [
+    { "date": "2026-07-29", "event": "Microsoft and Meta Q2 results", "tripwire_ids": ["1.2", "2.8", "1.1", "3.2"], "confidence": "scheduled" },
+    { "date": "2026-07-30", "event": "Amazon Q2 results — Epoch has AMZN crossing capex above operating cash flow now", "tripwire_ids": ["2.8", "1.2", "3.2"], "confidence": "scheduled" },
+    { "date": "2026-08-02", "event": "EU AI Act high-risk obligations take effect", "tripwire_ids": ["3.5"], "confidence": "scheduled" },
+    { "date": "2026-12-31", "event": "CoreWeave $4.2B principal repayment due (H2 2026)", "tripwire_ids": ["2.2", "2.1", "4.3"], "confidence": "estimated" },
+    { "date": "2026-10-01", "event": "Anthropic IPO investor meetings (reported)", "tripwire_ids": ["1.3"], "confidence": "conditional" },
+    { "date": "2027-01-01", "event": "Oracle-OpenAI $300B contract begins; approximately $75B prepaid or GPU-covered", "tripwire_ids": ["4.1", "1.4"], "confidence": "scheduled" }
+  ],
+
+  "cascade_contribution": {
+    "spec_to_fundamental": {
+      "earnings_estimate_momentum":     { "proposed": 2, "tier": 3, "load": 0.200, "prior_proposed": 1 },
+      "valuation_vulnerability":        { "proposed": 3, "tier": 0, "load": 0.600, "prior_proposed": 3 },
+      "credit_condition_deterioration": { "proposed": 2, "tier": 2, "load": 0.125, "prior_proposed": 2 }
+    },
+    "fundamental_to_buy_and_hold": {
+      "systemic_risk_perception":       { "proposed": 1, "tier": 4, "load": 0.000, "prior_proposed": 1 }
+    },
+    "formula": "clamp(1 + floor(4 * tier_load + 0.5), 1, 5)",
+    "rounding_mode": "half_up",
+    "rounding_note": "MUST be half-up, not banker's rounding. At tier_load = 0.125 the product is exactly 0.5: half-up yields 2, banker's rounding yields 1. Language defaults differ — Python's round() and JavaScript's Math.round() disagree on negative halves, and Python uses banker's rounding on positive halves. Use floor(x + 0.5) in every implementation.",
+    "override": null
+  },
+
+  "epig_governance": {
+    "gear_50_eligibility_review": false,
+    "gear_50_basis": "Requires a Tier 1 fire plus any Tier 2 FIRED. Neither present.",
+    "wrong_line_mechanical_governance": false,
+    "wrong_line_basis": "Requires two Tier 2 fires plus any Tier 3 fire. No Tier 2 fires present.",
+    "visibility": "internal"
+  },
+
+  "narrative": {
+    "bottom_line": "One upgrade — low-cost model substitution crossed its measurable threshold on developer-routing data — while the financing channel de-tensioned rather than tightened, leaving the Index at 0.20 and the band unchanged. The 29-30 July hyperscaler prints are the decisive input for guidance-raise punishment and cash-flow inversion.",
+    "quiet_week": false
+  },
+
+  "publication": {
+    "digest_path": "/data/ai-bubble/digests/digest-2026-07-27.md",
+    "slack_message_url": "https://ekantikcapital.slack.com/archives/C0AH7FWP2JU/p1785154467113519",
+    "verifier": null,
+    "verified_at": null,
+    "briefing_sent": false,
+    "briefing_should_fire": true,
+    "briefing_reason": "One tripwire moved up (3.4 ARMED to PARTIAL); one high-severity reconciliation flag opened (RF-2026-07-27-001)."
+  }
+}

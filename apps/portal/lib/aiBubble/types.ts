@@ -78,6 +78,12 @@ export interface RunTripwire {
   contrary_evidence?: Evidence[];
   unscoreable_reason?: string;
   data_request?: string;
+  /** Corroborating material deliberately excluded from the decision (e.g. pre-window). */
+  context?: (Evidence & { excluded_reason?: string })[];
+  /** Flags a threshold that may itself need revision — never acted on mid-run. */
+  calibration_flag?: string;
+  watch?: string;
+  reconciliation_flag_id?: string;
   visibility: Visibility;
 }
 
@@ -86,12 +92,14 @@ export interface RunTier {
   load: number;
   contribution: number;
   prior_load?: number;
+  delta?: number;
 }
 
 export interface CascadeFactor {
   proposed: number;
   tier: number;
   load: number;
+  prior_proposed?: number;
 }
 
 export interface CascadeOverride {
@@ -106,6 +114,9 @@ export interface CascadeOverride {
 export interface CascadeContribution {
   spec_to_fundamental: Record<string, CascadeFactor>;
   fundamental_to_buy_and_hold: Record<string, CascadeFactor>;
+  formula?: string;
+  rounding_mode?: string;
+  rounding_note?: string;
   override: CascadeOverride | null;
 }
 
@@ -117,6 +128,12 @@ export interface RunFile {
   prior_run_date: string | null;
   source_window_start: string | null;
   supersedes?: string;
+  /** Honest provenance when a prior run file could not be recovered (§7.3/§12.3). */
+  baseline_provenance?: {
+    type: 'reconstructed' | 'file';
+    note: string;
+    prior_run_file_exists: boolean;
+  };
   index: {
     score_raw: number;
     score_display: string;
@@ -135,6 +152,7 @@ export interface RunFile {
     direction: Direction;
     seller_class_activated?: SellerClass;
     cascade_note?: string;
+    mechanism?: string;
   }[];
   held_with_contrary_evidence: {
     id: string;
@@ -145,19 +163,28 @@ export interface RunFile {
   }[];
   watch_items: { rank: number; tripwire_id: string; text: string; visibility: Visibility }[];
   reconciliation_flags: {
+    id?: string;
     tripwire_id: string;
     severity: Severity;
     text: string;
     requires?: string;
     opened_on: string;
     status: 'open' | 'resolved';
+    provisional_ruling?: string;
+    impact_if_overturned?: string;
+    blocking?: string;
     visibility: Visibility;
   }[];
   catalysts: { date: string; event: string; tripwire_ids: string[]; confidence: Confidence }[];
   cascade_contribution: CascadeContribution;
   narrative: { bottom_line: string; quiet_week: boolean };
+  /** visibility:internal — stripped at build time by stripRunForMembers(). */
+  epig_governance?: Record<string, unknown> & { visibility: Visibility };
   publication: {
     digest_path?: string | null;
+    slack_message_url?: string;
+    briefing_should_fire?: boolean;
+    briefing_reason?: string;
     verifier: string | null;
     verified_at: string | null;
     briefing_sent: boolean;

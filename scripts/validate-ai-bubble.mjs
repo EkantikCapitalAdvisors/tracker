@@ -77,6 +77,14 @@ if (expected && thresholds.tripwires.length !== expected) {
       'supply the framework document before publication',
   );
 }
+const derived = thresholds.tripwires.filter((t) => t.text_source === 'derived_from_run');
+if (derived.length > 0) {
+  warn(
+    `${derived.length} threshold text(s) transcribed from run rationales, not read from the ` +
+      'framework document — reconcile and publish any correction as an amendment. ' +
+      '(Scoring never reads threshold_text, so Index integrity is unaffected.)',
+  );
+}
 const provisional = thresholds.tripwires.filter((t) => t.provisional);
 if (provisional.length > 0) {
   fail(
@@ -119,7 +127,12 @@ for (const [i, file] of runFiles.entries()) {
   const run = readJson(join(runsDir, file));
   const where = (m) => fail(`${file}: ${m}`);
 
-  if (run.thresholds_hash !== thresholds.hash && run.thresholds_hash !== computedHash) {
+  if (run.thresholds_hash === thresholds.declared_upstream_hash) {
+    warn(
+      `${file}: run cites the framework's upstream hash; local threshold text is a transcription ` +
+        'and is unverified against the framework document',
+    );
+  } else if (run.thresholds_hash !== thresholds.hash && run.thresholds_hash !== computedHash) {
     where(`thresholds_hash does not match the threshold file (${computedHash})`);
   }
 
@@ -180,10 +193,17 @@ for (const [i, file] of runFiles.entries()) {
   const ov = run.cascade_contribution?.override;
   if (ov && !String(ov.justification ?? '').trim()) where('cascade override has an empty justification');
 
-  // no internal-visibility content in a member-rendered payload
-  const internal = JSON.stringify(run).includes('"visibility":"internal"') ||
-    JSON.stringify(run).includes('"visibility": "internal"');
-  if (internal) where('run contains visibility:internal fields — strip at build time');
+  // §7.4 — the check is on the MEMBER-RENDERED payload, not the canonical
+  // source: a run legitimately stores internal blocks (e.g. epig_governance).
+  // What must never happen is one surviving the build-time strip.
+  const stripped = {};
+  for (const [k, v] of Object.entries(run)) {
+    if (v && typeof v === 'object' && !Array.isArray(v) && v.visibility === 'internal') continue;
+    stripped[k] = Array.isArray(v) ? v.filter((i) => !(i && typeof i === 'object' && i.visibility === 'internal')) : v;
+  }
+  if (JSON.stringify(stripped).includes('"visibility":"internal"')) {
+    where('visibility:internal survived the build-time strip');
+  }
 
   // prior-run linkage
   if (i > 0) {

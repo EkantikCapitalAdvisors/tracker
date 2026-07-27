@@ -77,9 +77,14 @@ export function bandFor(bands: BandDef[], scoreRaw: number): BandDef | null {
   return null;
 }
 
-/** §4.3 — proposed_factor_score(T) = clamp(1 + round(4 × tier_load), 1, 5). */
+/**
+ * §4.3 — clamp(1 + floor(4 × tier_load + 0.5), 1, 5).
+ * MUST be half-up, never a language default: at tier_load = 0.125 the product
+ * is exactly 0.5, where half-up yields 2 and banker's rounding yields 1.
+ * floor(x + 0.5) is specified so every implementation agrees.
+ */
 export function proposedFactorScore(load: number): number {
-  const raw = 1 + Math.round(4 * load);
+  const raw = 1 + Math.floor(4 * load + 0.5);
   return Math.min(5, Math.max(1, raw));
 }
 
@@ -145,4 +150,22 @@ type Direction = 'up' | 'down' | 'none';
 /** §8 — strip internal-visibility content at build time, never hide with CSS. */
 export function stripInternal<T extends { visibility?: string }>(items: T[] | undefined): T[] {
   return (items ?? []).filter((i) => i.visibility !== 'internal');
+}
+
+/**
+ * §8 — remove every visibility:internal block from a run before it reaches a
+ * member surface. Stripped at build time, never hidden with CSS: internal
+ * content must not exist in the shipped payload at all.
+ */
+export function stripRunForMembers<T extends Record<string, unknown>>(run: T): T {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(run)) {
+    if (v && typeof v === 'object' && !Array.isArray(v) && (v as { visibility?: string }).visibility === 'internal') {
+      continue; // drop the whole block (e.g. epig_governance)
+    }
+    out[k] = Array.isArray(v)
+      ? v.filter((i) => !(i && typeof i === 'object' && (i as { visibility?: string }).visibility === 'internal'))
+      : v;
+  }
+  return out as T;
 }
