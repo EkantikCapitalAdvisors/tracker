@@ -4,9 +4,13 @@
  * Which provider runs is decided purely by which env vars are present, so
  * switching costs a Railway variable change, not a deploy:
  *
- *   SMTP    SMTP_USER + SMTP_PASS (+ SMTP_HOST, default Gmail/Workspace)
- *           No DNS work: Google already SPF/DKIM-signs mail from your own
- *           mailbox. Best for low volume.
+ *   SENDGRID SENDGRID_API_KEY + NOTICE_FROM_EMAIL
+ *           Sends over HTTPS, so it works where outbound SMTP is blocked
+ *           (Railway blocks 465 and 587). Authenticates with CNAME records
+ *           only — no subdomain MX — so it also works on Wix DNS.
+ *   SMTP    SMTP_USER + SMTP_PASS (+ SMTP_HOST/SMTP_PORT)
+ *           Google Workspace needs no DNS work, but requires a host that
+ *           permits outbound SMTP. Railway does not.
  *   RESEND  RESEND_API_KEY + NOTICE_FROM_EMAIL
  *           Requires a verified sending domain (blocked while DNS is on Wix,
  *           which cannot create the subdomain MX Resend needs).
@@ -16,7 +20,7 @@
  * Recipients always go in BCC: clients never see each other's addresses.
  */
 
-export type NoticeProvider = 'smtp' | 'resend' | 'logged';
+export type NoticeProvider = 'sendgrid' | 'smtp' | 'resend' | 'logged';
 
 export interface NoticeMessage {
   subject: string;
@@ -25,6 +29,9 @@ export interface NoticeMessage {
 }
 
 export function activeProvider(): NoticeProvider {
+  // SendGrid first: it sends over HTTPS, so it works from hosts that block
+  // outbound SMTP ports (Railway does — 465 and 587 both time out).
+  if (process.env.SENDGRID_API_KEY && process.env.NOTICE_FROM_EMAIL) return 'sendgrid';
   if (process.env.SMTP_USER && process.env.SMTP_PASS) return 'smtp';
   if (process.env.RESEND_API_KEY && process.env.NOTICE_FROM_EMAIL) return 'resend';
   return 'logged';
@@ -51,6 +58,32 @@ async function sendViaResend(msg: NoticeMessage): Promise<void> {
     signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) throw new Error(`resend HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+}
+
+async function sendViaSendgrid(msg: NoticeMessage): Promise<void> {
+  const from = fromAddress();
+  // One personalization with the sender as `to` and everyone else BCC'd, so
+  // recipients never see each other.
+  const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      personalizations: [
+        {
+          to: [{ email: from }],
+          ...(msg.recipients.length > 0 ? { bcc: msg.recipients.map((email) => ({ email })) } : {}),
+        },
+      ],
+      from: { email: from, name: 'Ekantik Capital Advisors' },
+      subject: msg.subject,
+      content: [{ type: 'text/plain', value: msg.body }],
+    }),
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!res.ok) throw new Error(`sendgrid HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
 }
 
 async function sendViaSmtp(msg: NoticeMessage): Promise<void> {
@@ -84,7 +117,8 @@ export async function deliverNotice(msg: NoticeMessage): Promise<NoticeProvider>
   const provider = activeProvider();
   if (provider === 'logged' || msg.recipients.length === 0) return 'logged';
   try {
-    if (provider === 'smtp') await sendViaSmtp(msg);
+    if (provider === 'sendgrid') await sendViaSendgrid(msg);
+    else if (provider === 'smtp') await sendViaSmtp(msg);
     else await sendViaResend(msg);
     return provider;
   } catch (err) {
