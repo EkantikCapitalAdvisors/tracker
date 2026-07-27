@@ -59,7 +59,12 @@ async function sendViaSmtp(msg: NoticeMessage): Promise<void> {
     host: process.env.SMTP_HOST ?? 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT ?? 465),
     secure: (process.env.SMTP_PORT ?? '465') === '465',
-    auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
+    // Google displays app passwords in four spaced groups; strip whitespace
+    // so a pasted value works either way.
+    auth: {
+      user: process.env.SMTP_USER!.trim(),
+      pass: process.env.SMTP_PASS!.replace(/\s+/g, ''),
+    },
   });
   const from = fromAddress();
   await transport.sendMail({
