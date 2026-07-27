@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "framework_version": "1.0",
+  "effective_from": "2026-07-08",
+  "hash": "PENDING",
+  "expected_tripwire_count": 27,
+  "_incomplete_note": "Tripwire definitions are pre-committed criteria and are sourced ONLY from the AI Bubble framework document. This file currently holds the subset specified in Build Spec v1.0. Entries with provisional=true were inferred from run examples and MUST be replaced with the framework text before publication. The validator fails while any provisional entry exists or the count is below expected_tripwire_count.",
+  "tiers": [
+    { "id": 0, "key": "ambient",   "name": "Ambient conditions", "weight": 0.15, "question": "Is spending running ahead of the revenue meant to justify it?" },
+    { "id": 1, "key": "narrative", "name": "Narrative break",    "weight": 0.20, "question": "Has the market stopped rewarding the story?" },
+    { "id": 2, "key": "financing", "name": "Financing channel",  "weight": 0.30, "question": "Have lenders started saying no?" },
+    { "id": 3, "key": "demand",    "name": "Demand reality",     "weight": 0.25, "question": "Were the customers ever there at the assumed price?" },
+    { "id": 4, "key": "systemic",  "name": "Systemic",           "weight": 0.10, "question": "Is stress spreading into defaults and frozen capital?" }
+  ],
+  "bands": [
+    { "key": "healthy",            "label": "Healthy",             "min": 0.00, "max": 0.15 },
+    { "key": "late_cycle",         "label": "Late-cycle fragility","min": 0.15, "max": 0.35 },
+    { "key": "narrative_breaking", "label": "Narrative breaking",  "min": 0.35, "max": 0.55 },
+    { "key": "cascade",            "label": "Cascade underway",    "min": 0.55, "max": 1.00 }
+  ],
+  "tripwires": [
+    {
+      "id": "3.4",
+      "tier": 3,
+      "name": "Open-weight substitution",
+      "public_name": "Low-cost model substitution",
+      "threshold_text": "Greater than ~40% of measurable enterprise inference running on open-weight or Chinese models",
+      "threshold_machine": { "metric": "open_weight_inference_share", "op": ">", "value": 0.40 },
+      "seller_class": "fundamental",
+      "search_queries": ["open-weight model enterprise inference share adoption"],
+      "notes": "OpenRouter is the primary measurable proxy and under-weights committed enterprise contracts."
+    },
+    {
+      "id": "2.6",
+      "tier": 2,
+      "name": "Data-centre credit basis",
+      "public_name": "Data-centre borrowing premium",
+      "threshold_text": "PROVISIONAL — framework text required. Run 2026-07-27 states the threshold requires the data-centre/tech IG basis in bps versus broad IG.",
+      "threshold_machine": { "metric": "datacentre_ig_basis_bp", "op": ">", "value": null },
+      "seller_class": "fundamental",
+      "search_queries": ["data center IG spread basis versus broad investment grade"],
+      "notes": "Marked UNSCOREABLE in run 2026-07-27; recurring basis series is an open data request.",
+      "provisional": true
+    },
+    {
+      "id": "2.2",
+      "tier": 2,
+      "name": "Refinancing cost escalation",
+      "public_name": "Cost of refinancing",
+      "threshold_text": "PROVISIONAL — framework text required. Run 2026-07-27 contrary-evidence note implies refinancing above +300bps or a failure to refinance.",
+      "threshold_machine": { "metric": "refi_spread_bp", "op": ">", "value": 300 },
+      "seller_class": "fundamental",
+      "search_queries": ["AI data center debt refinancing spread secured notes"],
+      "notes": "Held ARMED in run 2026-07-27 against contrary evidence (Nebius $775M at SOFR+250bps, oversubscribed).",
+      "provisional": true
+    },
+    {
+      "id": "1.5",
+      "tier": 1,
+      "name": "Media assertion flip",
+      "public_name": "Press narrative reversal",
+      "threshold_text": "PROVISIONAL — framework text required.",
+      "threshold_machine": { "metric": "media_assertion_flip", "op": "=", "value": null },
+      "seller_class": "speculative",
+      "search_queries": ["AI bubble mainstream media narrative reversal"],
+      "notes": "Spec §4.1/§4.2: feeds Recovery Narrative Credibility in the second cascade, advisory only.",
+      "provisional": true
+    },
+    {
+      "id": "4.2",
+      "tier": 4,
+      "name": "Private-credit vehicle gating",
+      "public_name": "Frozen private-credit funds",
+      "threshold_text": "PROVISIONAL — framework text required.",
+      "threshold_machine": { "metric": "gated_private_credit_vehicles", "op": ">=", "value": null },
+      "seller_class": "buy_and_hold",
+      "search_queries": ["private credit fund gates withdrawal limits AI exposure"],
+      "notes": "Open reconciliation flag: three perpetual vehicles capped withdrawals Mar-Apr 2026, possibly pre-baseline. Needs human adjudication (Spec §12.4).",
+      "provisional": true
+    },
+    {
+      "id": "4.3",
+      "tier": 4,
+      "name": "Default cascade",
+      "public_name": "Defaults spreading",
+      "threshold_text": "PROVISIONAL — framework text required.",
+      "threshold_machine": { "metric": "ai_exposed_defaults", "op": ">=", "value": null },
+      "seller_class": "buy_and_hold",
+      "search_queries": ["AI infrastructure debt default restructuring"],
+      "notes": "Spec §4.2: with 4.2, the only inputs to the advisory Credit/Default Cascade factor.",
+      "provisional": true
+    }
+  ]
+}

@@ -10,7 +10,8 @@
   "scripts": {
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspace @ekantik/correction-engine --workspace @ekantik/correction-worker --workspace @ekantik/research-portal",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "validate:ai-bubble": "node scripts/validate-ai-bubble.mjs"
   },
   "engines": {
     "node": ">=22"

@@ -9,6 +9,7 @@ import { LAYER_THEORY, TIER_DOCS, TRIPWIRE_DOCS } from '@/lib/methodology';
 import { computePositioning } from '@/lib/positioning';
 import { loadPlainState, type PlainState } from '@/lib/plainState';
 import { loadWorkbench, rankAnalogs, type Workbench } from '@/lib/workbench';
+import { CascadeCard } from '@/components/aiBubble/CascadeCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -496,6 +497,9 @@ export default async function CorrectionDashboard() {
           </p>
         </section>
       )}
+
+      {/* 2d — AI Bubble Index → cascade feed (§4.5) */}
+      <CascadeCard />
 
       {/* 3 — Global context: is the selling worldwide or local? */}
       <section className="mt-10">

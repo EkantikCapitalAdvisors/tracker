@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-07-27",
+    "type": "genesis",
+    "framework_version": "1.0",
+    "prior_value": null,
+    "new_value": "thresholds.v1.json created",
+    "justification": "Initial pre-commitment of the AI Bubble Trigger Index framework. Tripwire definitions pending transcription from the framework document; file is not publishable until complete.",
+    "author": "build"
+  }
+]
