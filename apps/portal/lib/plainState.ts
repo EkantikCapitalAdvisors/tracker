@@ -290,9 +290,10 @@ export async function loadMacroBackdrop(): Promise<MacroReading[]> {
     ]);
 
   const last = <T extends { d: string; v: number }>(s: T[]) => s.at(-1) ?? null;
-  const yoy = (s: { d: string; v: number }[]) => {
+  /** Year-over-year in percent. `periods` is the observations in a year: 12 monthly, 4 quarterly. */
+  const yoy = (s: { d: string; v: number }[], periods = 12) => {
     const cur = s.at(-1);
-    const prior = s.length >= 13 ? s[s.length - 13] : undefined;
+    const prior = s.length > periods ? s[s.length - 1 - periods] : undefined;
     return cur && prior && prior.v !== 0 ? ((cur.v - prior.v) / prior.v) * 100 : null;
   };
 
@@ -306,7 +307,7 @@ export async function loadMacroBackdrop(): Promise<MacroReading[]> {
   const hs = last(houst);
   const pm = last(permit);
   const cv = last(curve);
-  const cp = yoy(profits);
+  const cp = yoy(profits, 4); // corporate profits are quarterly
   const un = last(unrate);
   const ismRow = (ism as { data?: { value_num: number | null; as_of_date: string }[] }).data?.[0];
 
