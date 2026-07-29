@@ -39,8 +39,17 @@ const CARDS = [
     featured: false,
   },
   {
+    href: '/ai-bubble',
+    step: 'EVIDENCE',
+    title: 'AI Bubble Trigger Index',
+    blurb:
+      'Twenty-eight pre-committed tripwires across five tiers — spending, narrative, financing, demand, systemic — scored weekly against unchanged thresholds. Feeds the correction model rather than sitting beside it.',
+    cta: 'See the Index',
+    featured: false,
+  },
+  {
     href: '/dashboard/methodology',
-    step: 'STEP 3 — RULES',
+    step: 'STEP 4 — RULES',
     title: 'Methodology & Rulebook',
     blurb:
       'The machinery in the open: the 50-year backtest (54 events, 1974–2026), all 16 frozen thresholds with the evidence behind each number, and the governance that keeps them frozen.',

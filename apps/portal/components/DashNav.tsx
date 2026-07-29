@@ -13,7 +13,8 @@ const TABS = [
   { href: '/health', step: '1', label: 'Market Health', sub: 'PLAIN VIEW — 7 gauges' },
   { href: '/dashboard/positioning', step: '2', label: 'Positioning', sub: 'WHAT — the allocation' },
   { href: '/dashboard/correction', step: '3', label: 'Engine Room', sub: 'WHY — full methodology (dense)' },
-  { href: '/dashboard/methodology', step: '4', label: 'Methodology', sub: 'RULES — the backtest' },
+  { href: '/ai-bubble', step: '4', label: 'AI Bubble Index', sub: 'EVIDENCE — 28 tripwires' },
+  { href: '/dashboard/methodology', step: '5', label: 'Methodology', sub: 'RULES — the backtest' },
 ];
 
 export function DashNav() {
