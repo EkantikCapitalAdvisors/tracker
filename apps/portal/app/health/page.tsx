@@ -1,5 +1,12 @@
 import Link from 'next/link';
-import { loadContextCards, loadPlainState, type ContextCard, type PlainState } from '@/lib/plainState';
+import {
+  loadContextCards,
+  loadMacroBackdrop,
+  loadPlainState,
+  type ContextCard,
+  type MacroReading,
+  type PlainState,
+} from '@/lib/plainState';
 import type { GaugeColor } from '@/lib/plainView';
 
 export const dynamic = 'force-dynamic';
@@ -58,9 +65,11 @@ export default async function HealthPage() {
   let ps: PlainState | null = null;
   let err: string | null = null;
   let context: ContextCard[] = [];
+  let macro: MacroReading[] = [];
   try {
     ps = await loadPlainState();
     context = await loadContextCards().catch(() => []);
+    macro = await loadMacroBackdrop().catch(() => []);
   } catch (e) {
     err = (e as Error).message;
   }
@@ -226,22 +235,57 @@ export default async function HealthPage() {
         </p>
       </section>
 
-      {/* 5 — Excluded indicators */}
+      {/* 5 — Economic backdrop: the headline indicators, as context only */}
+      {macro.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-xl">Economic backdrop</h2>
+          <p className="mt-1 max-w-3xl text-sm text-navy/60">
+            The headline indicators, kept current for reference. They carry no colour on purpose:
+            none of them moves the stance. Read them as the weather, not the instrument.
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {macro.map((m) => (
+              <div key={m.key} className="rounded-lg border border-navy/15 bg-navy/[0.02] p-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-navy/55">
+                    {m.label}
+                  </span>
+                  {m.detail && (
+                    <span className="rounded-full border border-quiet/40 bg-quiet/10 px-1.5 py-0.5 text-[10px] font-semibold text-quiet">
+                      {m.detail}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5 font-heading text-2xl text-navy/85">{m.value}</div>
+                <div className="text-[11px] text-navy/45">
+                  {m.asOf ? `as of ${m.asOf}` : 'not yet entered'}
+                </div>
+                <p className="mt-1 text-xs leading-snug text-navy/55">{m.note}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 6 — Why the backdrop is not a gauge */}
       <section className="mt-8 rounded-lg border border-navy/15 bg-white p-5">
-        <h2 className="text-xl">Where are GDP, payrolls, and PMI?</h2>
+        <h2 className="text-xl">Why none of that is a gauge</h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-navy/70">
-          Deliberately absent. GDP and payrolls tell you where the economy <em>was</em> — they are
-          revised for months and turn after markets do. Surveys like PMI and consumer sentiment
-          failed our causation tests over fifty years of corrections: they echo the market&rsquo;s
-          mood, they don&rsquo;t predict its declines. And the big slow numbers — government debt
-          to GDP, the dollar&rsquo;s reserve-currency share — move over decades, so they shape the
-          long game but can&rsquo;t time anything.
+          Everything above is worth watching, and none of it is worth <em>timing</em> with. GDP and
+          payrolls tell you where the economy <em>was</em> — they are revised for months and turn
+          after markets do. Surveys like PMI and consumer sentiment failed our causation tests over
+          fifty years of corrections: they echo the market&rsquo;s mood rather than predict its
+          declines. Corporate earnings and consumer spending arrive quarterly and monthly,
+          long after price has moved.
         </p>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-navy/70">
-          Every gauge that <em>is</em> on this page earned its place in a 50-year backtest and
-          carries a pre-committed retirement rule: if it stops working on live data, it is publicly
-          flagged for removal. We would rather show you seven honest gauges than twenty impressive
-          ones.
+          One of them does earn a gauge, and only through the back door: the unemployment{' '}
+          <em>trend</em> — not its level — is what arms the Jobs signal, and even then it cannot
+          fire without confirmation from jobless claims and earnings revisions. That is the
+          standard every gauge on this page had to clear: it earned its place in a 50-year backtest
+          and carries a pre-committed retirement rule, so if it stops working on live data it is
+          publicly flagged for removal. We would rather show you seven honest gauges and ten honest
+          readings than twenty impressive ones.
         </p>
       </section>
 

@@ -250,3 +250,140 @@ export async function loadPlainState(): Promise<PlainState | null> {
     cadence: 'Updated after every market close · reviewed weekly; daily attention when any gauge leaves green',
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Economic backdrop — the headline indicators investors expect.       */
+/* CONTEXT ONLY: none of these feeds a tripwire or moves the stance.   */
+/* ------------------------------------------------------------------ */
+
+export interface MacroReading {
+  key: string;
+  label: string;
+  value: string;
+  asOf: string | null;
+  note: string;
+  /** Directional colouring is deliberately absent — see /health copy. */
+  detail?: string;
+}
+
+const fmtDate = (d: string | null) => d ?? '—';
+
+export async function loadMacroBackdrop(): Promise<MacroReading[]> {
+  const [gdp, pay, corePce, dff, spend, houst, permit, curve, profits, unrate, ism] =
+    await Promise.all([
+      series('A191RL1Q225SBEA', 2),
+      series('PAYEMS', 14),
+      series('PCEPILFE', 14),
+      series('DFF', 5),
+      series('PCEC96', 14),
+      series('HOUST', 2),
+      series('PERMIT', 2),
+      series('T10Y2Y', 5),
+      series('CP', 6),
+      series('UNRATE', 2),
+      db()
+        .from('cd_manual_entries')
+        .select('value_num,as_of_date')
+        .eq('field', 'ISM_MANUFACTURING_PMI')
+        .order('as_of_date', { ascending: false })
+        .limit(1),
+    ]);
+
+  const last = <T extends { d: string; v: number }>(s: T[]) => s.at(-1) ?? null;
+  const yoy = (s: { d: string; v: number }[]) => {
+    const cur = s.at(-1);
+    const prior = s.length >= 13 ? s[s.length - 13] : undefined;
+    return cur && prior && prior.v !== 0 ? ((cur.v - prior.v) / prior.v) * 100 : null;
+  };
+
+  const g = last(gdp);
+  const p = last(pay);
+  const pPrior = pay.length >= 2 ? pay[pay.length - 2] : undefined;
+  const payChange = p && pPrior ? p.v - pPrior.v : null; // thousands
+  const pce = yoy(corePce);
+  const ff = last(dff);
+  const sp = yoy(spend);
+  const hs = last(houst);
+  const pm = last(permit);
+  const cv = last(curve);
+  const cp = yoy(profits);
+  const un = last(unrate);
+  const ismRow = (ism as { data?: { value_num: number | null; as_of_date: string }[] }).data?.[0];
+
+  return [
+    {
+      key: 'gdp',
+      label: 'Real GDP growth',
+      value: g ? `${g.v > 0 ? '+' : ''}${g.v.toFixed(1)}%` : 'N/A',
+      asOf: fmtDate(g?.d ?? null),
+      note: 'Annualised quarterly rate. Revised for months and turns after markets do.',
+    },
+    {
+      key: 'payrolls',
+      label: 'Nonfarm payrolls',
+      value: payChange !== null ? `${payChange > 0 ? '+' : ''}${Math.round(payChange)}k` : 'N/A',
+      asOf: fmtDate(p?.d ?? null),
+      note: 'Month-over-month change in jobs.',
+    },
+    {
+      key: 'unemployment',
+      label: 'Unemployment rate',
+      value: un ? `${un.v.toFixed(1)}%` : 'N/A',
+      asOf: fmtDate(un?.d ?? null),
+      note: 'The one macro series that does drive a gauge — via the Jobs signal, which needs its trend, not its level.',
+      detail: 'feeds Jobs',
+    },
+    {
+      key: 'corepce',
+      label: 'Core PCE inflation',
+      value: pce !== null ? `${pce.toFixed(1)}%` : 'N/A',
+      asOf: fmtDate(corePce.at(-1)?.d ?? null),
+      note: "Year-over-year. The Fed's preferred measure; the Fed-freedom gauge reads headline CPI against its own frozen 4% line.",
+    },
+    {
+      key: 'fedfunds',
+      label: 'Federal Funds Rate',
+      value: ff ? `${ff.v.toFixed(2)}%` : 'N/A',
+      asOf: fmtDate(ff?.d ?? null),
+      note: 'Effective rate. Where policy is, not whether it is free to act.',
+    },
+    {
+      key: 'spending',
+      label: 'Consumer spending',
+      value: sp !== null ? `${sp > 0 ? '+' : ''}${sp.toFixed(1)}%` : 'N/A',
+      asOf: fmtDate(spend.at(-1)?.d ?? null),
+      note: 'Real personal consumption, year-over-year.',
+    },
+    {
+      key: 'ism',
+      label: 'ISM Manufacturing PMI',
+      value: ismRow?.value_num != null ? ismRow.value_num.toFixed(1) : 'N/A — manual',
+      asOf: ismRow?.as_of_date ?? null,
+      note: 'ISM licenses this series commercially and withdrew it from public data feeds, so it is entered by hand rather than ingested.',
+    },
+    {
+      key: 'housing',
+      label: 'Housing starts / permits',
+      value: hs && pm ? `${(hs.v / 1000).toFixed(2)}M / ${(pm.v / 1000).toFixed(2)}M` : 'N/A',
+      asOf: fmtDate(hs?.d ?? null),
+      note: 'Annualised units. Permits lead starts.',
+    },
+    {
+      key: 'curve',
+      label: 'Yield curve (10y − 2y)',
+      value: cv ? `${cv.v > 0 ? '+' : ''}${(cv.v * 100).toFixed(0)}bp` : 'N/A',
+      asOf: fmtDate(cv?.d ?? null),
+      note:
+        cv && cv.v < 0
+          ? 'Inverted. A regime flag with a lead measured in quarters — never a timing signal.'
+          : 'Positive slope. A regime flag, not a timing signal.',
+    },
+    {
+      key: 'earnings',
+      label: 'Corporate earnings',
+      value: cp !== null ? `${cp > 0 ? '+' : ''}${cp.toFixed(1)}%` : 'N/A',
+      asOf: fmtDate(profits.at(-1)?.d ?? null),
+      note: 'After-tax corporate profits, year-over-year (quarterly, national accounts).',
+    },
+  ];
+}

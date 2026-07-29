@@ -43,6 +43,25 @@ const INTL_SERIES: { id: string; symbol: string }[] = [
   { id: 'INTL_TAIEX', symbol: '^TWII' },
 ];
 
+/**
+ * Macro backdrop — CONTEXT ONLY, never feeds the engine. These are the
+ * headline indicators investors expect to see; they describe where the
+ * economy has been and are deliberately excluded from every tripwire.
+ * ISM Manufacturing PMI is absent by necessity, not choice: ISM licenses it
+ * and withdrew it from FRED, so it is a manual-entry field.
+ */
+const MACRO_SERIES: string[] = [
+  'A191RL1Q225SBEA', // real GDP growth, % annualised (quarterly)
+  'PAYEMS',          // nonfarm payrolls, level (monthly) — MoM change displayed
+  'PCEPILFE',        // core PCE price index (monthly) — YoY displayed
+  'DFF',             // federal funds effective rate (daily)
+  'PCEC96',          // real consumer spending (monthly) — YoY displayed
+  'HOUST',           // housing starts (monthly)
+  'PERMIT',          // building permits (monthly)
+  'T10Y2Y',          // 10y minus 2y curve (daily)
+  'CP',              // corporate profits after tax (quarterly) — YoY displayed
+];
+
 export async function runDailyIngest(): Promise<void> {
   const today = new Date().toISOString().slice(0, 10);
   for (const series of DAILY_SERIES) {
@@ -68,6 +87,21 @@ export async function runDailyIngest(): Promise<void> {
         },
       ]);
       console.error(`DATA_GAP ${series.id}: ${(err as Error).message}`);
+    }
+  }
+
+  // Macro backdrop (fail-open; context only, never blocks the evaluation).
+  for (const id of MACRO_SERIES) {
+    try {
+      const obs = await fetchFredSeries(id, 60);
+      await storeReadings(
+        obs.map((o) => ({ series_id: id, as_of_date: o.date, value: o.value, source: 'FRED' })),
+      );
+    } catch (err) {
+      await storeReadings([
+        { series_id: id, as_of_date: today, value: null, source: 'FRED', data_gap: true },
+      ]);
+      console.error(`DATA_GAP ${id}: ${(err as Error).message}`);
     }
   }
 
