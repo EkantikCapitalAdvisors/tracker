@@ -38,6 +38,12 @@ packages/engine        Pure tier state machine, tripwires, depth engine, indicat
 apps/worker            Railway worker (BullMQ): ingestion, sentinel, retirement checks
 apps/portal            Next.js 14 App Router portal — /dashboard/correction + cron/admin routes
 supabase/migrations    Schema, governance triggers, RLS, threshold seed
+
+packages/freedom-engine  @freedom/engine — Freedom Command (separate product)
+                         calculation core, built test-first against the golden
+                         values in docs/freedom-command/ spec §15.1
+docs/freedom-command     Freedom Command SaaS Specification v2.1 (the build
+                         authority) + reference-implementation handoff README
 ```
 
 ## The 54-event replay harness (M1 gate)
