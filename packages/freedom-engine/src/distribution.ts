@@ -18,6 +18,7 @@ import type { SpendingPolicy } from "./policies.js";
 export function yearsFunded(capital: number, r: number, annualNetSpend: number): number {
   if (annualNetSpend <= 0) return Infinity;
   if (capital <= 0) return 0;
+  if (r <= -1) return 0; // total-loss rate: capital vaporizes before any withdrawal
   if (r === 0) return capital / annualNetSpend;
   if (r > 0 && annualNetSpend <= capital * r) return Infinity;
   // C_n = C(1+r)^n − S·((1+r)^n − 1)/r = 0  ⇒  n = −ln(1 − C·r/S)/ln(1+r).

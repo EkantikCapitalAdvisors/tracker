@@ -80,6 +80,9 @@ describe("no NaN/Infinity for bounded inputs (property)", () => {
     expect(yearsFunded(1_000_000, 0, 80_000)).toBeCloseTo(12.5, 6);
     expect(yearsFunded(1_000_000, -0.02, 80_000)).toBeGreaterThan(0);
     expect(yearsFunded(1_000_000, -0.02, 80_000)).toBeLessThan(12.5);
+    // Pathological total-loss rates stay defined (no NaN/−Infinity).
+    expect(yearsFunded(1_000_000, -1, 80_000)).toBe(0);
+    expect(yearsFunded(1_000_000, -1.5, 80_000)).toBe(0);
   });
 });
 

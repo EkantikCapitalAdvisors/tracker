@@ -38,6 +38,22 @@ describe("Model B obligation drop-off (§M11)", () => {
   });
 });
 
+describe("debt strategy comparison (§M5)", () => {
+  it("avalanche never pays more interest than snowball; both beat minimums", () => {
+    // Orderings differ: the smallest balance is the LOWEST-APR debt.
+    const debts = [
+      { name: "Small-low", balance: 3_000, apr: 0.04, minPayment: 100 },
+      { name: "Big-high", balance: 20_000, apr: 0.26, minPayment: 500, extraPayment: 400 },
+      { name: "Mid", balance: 10_000, apr: 0.12, minPayment: 250 },
+    ];
+    const result = computeEngineResult({ debts });
+    const byName = Object.fromEntries(result.debts.strategies.map((s) => [s.strategy, s]));
+    expect(byName.avalanche!.totalInterest as number).toBeLessThan(byName.snowball!.totalInterest as number);
+    expect(byName.snowball!.totalInterest as number).toBeLessThan(byName.minimums!.totalInterest as number);
+    expect(byName.avalanche!.debtFreeMonths as number).toBeLessThanOrEqual(byName.minimums!.debtFreeMonths as number);
+  });
+});
+
 describe("score is applicability-aware and cap-honest (§M15)", () => {
   it("missing components reweight; they never count as zero", () => {
     const partial = computeScore(
