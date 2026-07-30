@@ -199,7 +199,7 @@ describe('§8 internal visibility is stripped, not hidden', () => {
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { stripRunForMembers } from '../lib/aiBubble/scoring';
-import type { RunFile, ThresholdFile } from '../lib/aiBubble/types';
+import type { RunFile } from '../lib/aiBubble/types';
 
 const DATA = join(__dirname, '..', '..', '..', 'data', 'ai-bubble');
 const REAL_THRESHOLDS = JSON.parse(
